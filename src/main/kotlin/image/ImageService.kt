@@ -5,11 +5,12 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
+private fun largeImagePredicate(imageInfo: ImageInfo) = imageInfo.size == ImageSize.LARGE
 
 class ImageService(private val imageLister: ImageLister) {
     private var imageList = AtomicReference(imageLister.images())
     private var largeImageList =
-        AtomicReference(imageList.get().filter { imageInfo -> imageInfo.size == ImageSize.LARGE || imageInfo.size == ImageSize.MEDIUM })
+        AtomicReference(imageList.get().filter(::largeImagePredicate))
     private val timer = Timer().apply {
         schedule(UpdateImageList(imageLister, imageList, largeImageList), 5 * 60 * 1_000, 5 * 60 * 1_000)
     }
@@ -38,7 +39,7 @@ class ImageService(private val imageLister: ImageLister) {
             imageList.set(newImageList)
 
             val newLargeImageList =
-                newImageList.filter { imageInfo -> imageInfo.size == ImageSize.LARGE || imageInfo.size == ImageSize.MEDIUM }
+                newImageList.filter(::largeImagePredicate)
             largeImageList.set(newLargeImageList)
 
             logger.info("Done updating image list: {} image(s)", newImageList.size)
