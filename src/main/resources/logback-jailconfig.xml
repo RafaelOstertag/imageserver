@@ -1,0 +1,27 @@
+<configuration>
+
+    <appender name="ROTATOR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR:-/opt/app/var/log}/app.log</file>
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR:-/opt/app/var/log}/app.%d{YYYY-MM-dd}</fileNamePattern>
+        </rollingPolicy>
+        <maxHistory>30</maxHistory>
+        <totalSizeCap>150MB</totalSizeCap>
+
+    </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="ch.guengel.imageserver" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="ROTATOR"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
