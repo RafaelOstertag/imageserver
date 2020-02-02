@@ -41,7 +41,7 @@ class ImageLister(directory: String) {
 
     private fun toImageSize(largestSide: Int) = when {
         largestSide < 1024 -> ImageSize.SMALL
-        largestSide < 1500 -> ImageSize.MEDIUM
+        largestSide < 1200 -> ImageSize.MEDIUM
         else -> ImageSize.LARGE
     }
 
