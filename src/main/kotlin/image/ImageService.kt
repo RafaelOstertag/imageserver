@@ -6,29 +6,28 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 private fun largeImagePredicate(imageInfo: ImageInfo) = imageInfo.size == ImageSize.LARGE
+private const val updateInterval = 5 * 60 * 1_000L
 
 class ImageService(private val imageLister: ImageLister) {
     private var imageList = AtomicReference(imageLister.images())
     private var largeImageList =
         AtomicReference(imageList.get().filter(::largeImagePredicate))
     private val timer = Timer().apply {
-        schedule(UpdateImageList(imageLister, imageList, largeImageList), 5 * 60 * 1_000, 5 * 60 * 1_000)
+        schedule(ImageListUpdater(imageLister, imageList, largeImageList), updateInterval, updateInterval)
     }
     private val rng = Random(System.currentTimeMillis())
 
-    fun getRandomImage(width: Int, height: Int): Image {
+    fun getRandomImage(width: Int, height: Int): Image = getRandomImage(imageList, width, height)
+
+    fun getLargeRandomImage(width: Int, height: Int): Image = getRandomImage(largeImageList, width, height)
+
+    private fun getRandomImage(imageList: AtomicReference<List<ImageInfo>>, width: Int, height: Int): Image {
         val imageInfo = imageList.get().random(rng)
         val originalImage = Image(imageInfo.path)
         return originalImage.resizeToMatch(width, height)
     }
 
-    fun getLargeRandomImage(width: Int, height: Int): Image {
-        val imageInfo = largeImageList.get().random(rng)
-        val originalImage = Image(imageInfo.path)
-        return originalImage.resizeToMatch(width, height)
-    }
-
-    private class UpdateImageList(
+    private class ImageListUpdater(
         private val imageLister: ImageLister,
         private val imageList: AtomicReference<List<ImageInfo>>,
         private val largeImageList: AtomicReference<List<ImageInfo>>
