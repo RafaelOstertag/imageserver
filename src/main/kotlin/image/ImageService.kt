@@ -23,6 +23,7 @@ class ImageService(private val imageLister: ImageLister) {
 
     private fun getRandomImage(imageList: AtomicReference<List<ImageInfo>>, width: Int, height: Int): Image {
         val imageInfo = imageList.get().random(rng)
+        logger.info("Serving image {}", imageInfo.path.canonicalPath)
         val originalImage = Image(imageInfo.path)
         return originalImage.resizeToMatch(width, height)
     }
