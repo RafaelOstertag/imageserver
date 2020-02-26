@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 private fun largeImagePredicate(imageInfo: ImageInfo) = imageInfo.size == ImageSize.LARGE
-private const val updateInterval = 5 * 60 * 1_000L
+private const val updateInterval = 15 * 60 * 1_000L
 
 class ImageService(private val imageLister: ImageLister) {
     private var imageList = AtomicReference(imageLister.images())
