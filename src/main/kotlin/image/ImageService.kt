@@ -1,49 +1,80 @@
 package ch.guengel.imageserver.image
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
-import java.util.*
-import java.util.concurrent.atomic.AtomicReference
+import java.io.File
+import java.util.concurrent.ConcurrentSkipListSet
 import kotlin.random.Random
 
 private fun largeImagePredicate(imageInfo: ImageInfo) = imageInfo.size == ImageSize.LARGE
 private const val updateInterval = 15 * 60 * 1_000L
 
-class ImageService(private val imageLister: ImageLister) {
-    private var imageList = AtomicReference(imageLister.images())
-    private var largeImageList =
-        AtomicReference(imageList.get().filter(::largeImagePredicate))
-    private val timer = Timer().apply {
-        schedule(ImageListUpdater(imageLister, imageList, largeImageList), updateInterval, updateInterval)
-    }
+class ImageService(private val imageLister: ImageLister, private val imageWatcher: ImageWatcher) {
+    private var allImages = ConcurrentSkipListSet<String>()
+    private val largeImages = ConcurrentSkipListSet<String>()
     private val rng = Random(System.currentTimeMillis())
 
-    fun getRandomImage(width: Int, height: Int): Image = getRandomImage(imageList, width, height)
+    init {
+        readAll()
+        watchDirectory()
+    }
 
-    fun getLargeRandomImage(width: Int, height: Int): Image = getRandomImage(largeImageList, width, height)
+    fun getRandomImage(width: Int, height: Int): Image = getRandomImage(allImages, width, height)
 
-    private fun getRandomImage(imageList: AtomicReference<List<ImageInfo>>, width: Int, height: Int): Image {
-        val imageInfo = imageList.get().random(rng)
-        logger.info("Serving image {}", imageInfo.path.canonicalPath)
-        val originalImage = Image(imageInfo.path)
+    fun getLargeRandomImage(width: Int, height: Int): Image = getRandomImage(largeImages, width, height)
+
+    private fun getRandomImage(imageList: ConcurrentSkipListSet<String>, width: Int, height: Int): Image {
+        val image = imageList.random(rng)
+        logger.info("Serving image {}", image)
+        val originalImage = Image(File(image))
         return originalImage.resizeToMatch(width, height)
     }
 
-    private class ImageListUpdater(
-        private val imageLister: ImageLister,
-        private val imageList: AtomicReference<List<ImageInfo>>,
-        private val largeImageList: AtomicReference<List<ImageInfo>>
-    ) : TimerTask() {
-        override fun run() {
+    fun readAll() {
+        GlobalScope.launch {
             logger.info("Start updating image list")
-            val newImageList = imageLister.images()
-            imageList.set(newImageList)
+            allImages.clear()
+            largeImages.clear()
+            for (image in imageLister.images()) {
+                addImageToLists(image)
 
-            val newLargeImageList =
-                newImageList.filter(::largeImagePredicate)
-            largeImageList.set(newLargeImageList)
+            }
+            logger.info("Done updating image list: {} image(s)", allImages.size)
 
-            logger.info("Done updating image list: {} image(s)", newImageList.size)
         }
+    }
+
+    private fun addImageToLists(image: ImageInfo) {
+        val filePath = image.path.canonicalPath
+        allImages.add(filePath)
+        if (largeImagePredicate(image)) {
+            largeImages.add(filePath)
+        }
+    }
+
+    private fun watchDirectory() {
+        GlobalScope.launch {
+            imageWatcher.start()
+            for (image in imageWatcher.imageChannel) {
+                when (image.event) {
+                    ImageEvent.UPDATE -> {
+                        logger.info("Update image {}", image.path.canonicalPath)
+                        addImageToLists(image)
+                    }
+                    ImageEvent.DELETE -> {
+                        logger.info("Remove image {}", image.path.canonicalPath)
+                        removeImageFromLists(image)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun removeImageFromLists(image: ImageInfo) {
+        val filePath = image.path.canonicalPath
+        allImages.remove(filePath)
+        largeImages.remove(filePath)
     }
 
     companion object {

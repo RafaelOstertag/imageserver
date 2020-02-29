@@ -18,8 +18,6 @@
         </encoder>
     </appender>
 
-    <logger name="ch.guengel.imageserver" level="DEBUG"/>
-
     <root level="INFO">
         <appender-ref ref="ROTATOR"/>
         <appender-ref ref="STDOUT"/>

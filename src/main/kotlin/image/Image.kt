@@ -45,4 +45,9 @@ class Image(bufferedImage: BufferedImage) {
     fun writePNG(outputStream: OutputStream) {
         ImageIO.write(image, "png", outputStream)
     }
+
+    companion object {
+        val imagePattern = ".*\\.(?:jpe?g|png|gif)$"
+    }
+
 }
