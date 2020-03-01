@@ -5,7 +5,8 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.concurrent.ConcurrentSkipListSet
-import kotlin.random.Random
+import java.util.concurrent.ThreadLocalRandom
+import kotlin.random.asKotlinRandom
 
 private fun largeImagePredicate(imageInfo: ImageInfo) = imageInfo.size == ImageSize.LARGE
 private const val updateInterval = 15 * 60 * 1_000L
@@ -13,7 +14,7 @@ private const val updateInterval = 15 * 60 * 1_000L
 class ImageService(private val imageLister: ImageLister, private val imageWatcher: ImageWatcher) {
     private var allImages = ConcurrentSkipListSet<String>()
     private val largeImages = ConcurrentSkipListSet<String>()
-    private val rng = Random(System.currentTimeMillis())
+    private val rng = ThreadLocalRandom.current().asKotlinRandom()
 
     init {
         readAll()
