@@ -39,7 +39,6 @@ class ImageService(private val imageLister: ImageLister, private val imageWatche
             largeImages.clear()
             for (image in imageLister.images()) {
                 addImageToLists(image)
-
             }
             logger.info("Done updating image list: {} image(s)", allImages.size)
 

@@ -1,11 +1,8 @@
 package ch.guengel.imageserver.image
 
 import ch.guengel.imageserver.directory.DirectoryLister
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors
 
@@ -16,16 +13,19 @@ class ImageLister(directory: String) {
         DirectoryLister(directory, Image.imagePattern)
 
     private suspend fun readImageInformation(imageChannel: Channel<ImageInfo>) = withContext(fileReadPool) {
-        directoryLister
+        val jobList = directoryLister
             .getFiles()
-            .forEach { file ->
-                try {
-                    imageChannel.send(ImageInfo.fromFile(file))
-                } catch (e: Exception) {
-                    logger.error("Error loading file {}", file.canonicalPath, e)
-                    imageChannel.send(ImageInfo(file, ImageSize.MEDIUM, ImageEvent.UPDATE))
+            .map { file ->
+                launch {
+                    try {
+                        imageChannel.send(ImageInfo.fromFile(file))
+                    } catch (e: Exception) {
+                        logger.error("Error loading file {}", file.canonicalPath, e)
+                        imageChannel.send(ImageInfo(file, ImageSize.MEDIUM, ImageEvent.UPDATE))
+                    }
                 }
             }
+        jobList.joinAll()
         imageChannel.close()
     }
 
