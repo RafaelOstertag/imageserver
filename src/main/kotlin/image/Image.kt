@@ -1,6 +1,8 @@
 package ch.guengel.imageserver.image
 
 
+import java.awt.Color
+import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
@@ -8,15 +10,16 @@ import java.io.File
 import java.io.OutputStream
 import javax.imageio.ImageIO
 
+
 class Image(bufferedImage: BufferedImage) {
-    private val image: BufferedImage = bufferedImage
+    private val image: BufferedImage = removeAlpha(bufferedImage)
     val width get() = image.width
     val height get() = image.height
 
     constructor(imageFile: File) : this(ImageIO.read(imageFile))
 
     fun resizeToMatch(targetWidth: Int, targetHeight: Int): Image {
-        val outputImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB)
+        val resizedImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB)
         val affineTransform: AffineTransform
 
         if (targetWidth == targetHeight) {
@@ -37,13 +40,26 @@ class Image(bufferedImage: BufferedImage) {
         }
 
         val scaleOp = AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR)
-        scaleOp.filter(image, outputImage)
+        scaleOp.filter(image, resizedImage)
 
-        return Image(outputImage)
+        return Image(removeAlpha(resizedImage))
     }
 
-    fun writePNG(outputStream: OutputStream) {
-        ImageIO.write(image, "png", outputStream)
+    private fun removeAlpha(resizedImage: BufferedImage): BufferedImage {
+        val w = resizedImage.width
+        val h = resizedImage.height
+        val target = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
+
+        val g: Graphics2D = target.createGraphics()
+        g.color = Color(0x0, false)
+        g.fillRect(0, 0, w, h)
+        g.drawImage(resizedImage, 0, 0, null)
+        g.dispose()
+        return target
+    }
+
+    fun write(outputStream: OutputStream) {
+        ImageIO.write(image, "jpeg", outputStream)
     }
 
     companion object {

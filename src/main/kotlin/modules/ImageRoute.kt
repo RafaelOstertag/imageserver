@@ -30,8 +30,8 @@ fun Application.imageRoute() {
             } else {
                 image = imageService.getRandomImage(width, height)
             }
-            call.respondOutputStream(ContentType.Image.PNG, HttpStatusCode.OK) {
-                image.writePNG(this)
+            call.respondOutputStream(ContentType.Image.JPEG, HttpStatusCode.OK) {
+                image.write(this)
             }
         }
     }
