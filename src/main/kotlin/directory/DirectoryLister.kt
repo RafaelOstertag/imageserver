@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 
 class DirectoryLister(directory: String, pattern: String = ".*") {
-    private val patternMatcher = Regex(pattern)
+    private val patternMatcher = Regex(pattern, RegexOption.IGNORE_CASE)
     private val directory = File(directory)
 
     fun getFiles() =

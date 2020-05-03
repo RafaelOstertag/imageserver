@@ -9,7 +9,7 @@ import java.io.File
 
 
 class ImageWatcher(directory: String) : AutoCloseable {
-    private val imageRegex = Regex(Image.imagePattern)
+    private val imageRegex = Regex(Image.imagePattern, RegexOption.IGNORE_CASE)
     private val directoryWatcherChannel = Channel<FileEvent>()
     val imageChannel = Channel<ImageInfo>()
     private val imageWatcher = DirectoryWatcher(directory, directoryWatcherChannel)

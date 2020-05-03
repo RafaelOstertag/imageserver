@@ -9,7 +9,6 @@ import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.asKotlinRandom
 
 private fun largeImagePredicate(imageInfo: ImageInfo) = imageInfo.size == ImageSize.LARGE
-private const val updateInterval = 15 * 60 * 1_000L
 
 class ImageService(private val imageLister: ImageLister, private val imageWatcher: ImageWatcher) {
     private var allImages = ConcurrentSkipListSet<String>()
