@@ -1,135 +1,131 @@
 package ch.guengel.imageserver.directory
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds.*
-import java.nio.file.WatchEvent
-import java.util.concurrent.Executors
+import java.io.IOException
+import java.nio.file.*
+import kotlin.coroutines.CoroutineContext
 
-private val directoryWatcherDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-private val watchServiceDispatcher = Executors.newCachedThreadPool().asCoroutineDispatcher()
-private val logger = LoggerFactory.getLogger(DirectoryWatcher::class.java)
+class DirectoryWatcher(private val root: Path, private val callback: WatchCallback) : AutoCloseable {
+    private var watchJob: Job? = null
 
-class DirectoryWatcher(directory: String, private val fileEvents: Channel<FileEvent>) {
-    private val watchService = FileSystems.getDefault().newWatchService()
-    private val subDirectoryWatchers = mutableMapOf<String, DirectoryWatcher>()
-    private var watching = false
-    val directoryToWatch = Path.of(directory).also {
-        it.register(watchService, arrayOf(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY))
-    }
+    private val watchService: WatchService = FileSystems.getDefault().newWatchService()
+    private val keyMap = mutableMapOf<WatchKey, Path>()
+    private val directorySet = mutableSetOf<Path>()
 
-    fun watch() {
-        if (watching) return
-
-
-        logger.info("Start watching directory ${directoryToWatch.toAbsolutePath()}")
-        startSubDirectoryWatchers()
-        CoroutineScope(directoryWatcherDispatcher).launch {
-            watchService.use {
-                startWork()
-                logger.info("Stop watching directory ${directoryToWatch.toAbsolutePath()}")
-                watching = false
-            }
-        }
-
-        watching = true
-    }
-
-    private fun startSubDirectoryWatchers() {
-        val filepath = directoryToWatch.toAbsolutePath().toFile().canonicalFile
-        val canonicalFilePath = filepath.canonicalPath
-        filepath.walk(FileWalkDirection.TOP_DOWN).onEnter {
-            it.parentFile.canonicalPath == canonicalFilePath || it.canonicalPath == canonicalFilePath
-        }.iterator().forEach {
-            if (!it.isDirectory || canonicalFilePath == it.canonicalPath) return@forEach
-
-            val subDirectoryWatcher = DirectoryWatcher(it.canonicalPath, fileEvents)
-            subDirectoryWatcher.watch()
-            subDirectoryWatchers[it.name] = subDirectoryWatcher
-        }
-    }
-
-    private suspend fun startWork() {
-        while (true) {
-            try {
-                work()
-                return
-            } catch (e: Exception) {
-                logger.warn("Error while watching directory ${directoryToWatch.toFile().canonicalPath}. Continue", e)
-            }
-        }
-    }
-
-    private suspend fun work() {
-        while (true) {
-            val key = CoroutineScope(watchServiceDispatcher).async {
-                logger.debug("Wait for WatchService")
-                val key = watchService.take()
-                logger.debug("WatchService returned")
-                key
-            }.await()
-
-            handleEvents(key.pollEvents())
-            if (!key.reset()) {
-                logger.info("Directory has ${directoryToWatch} been deleted")
-                return
-            }
-        }
-    }
-
-    private suspend fun handleEvents(pollEvents: List<WatchEvent<*>>) {
-        pollEvents
-            .filter {
-                val overflow = it.kind() == OVERFLOW
-                if (overflow) logger.debug("Overflow detected")
-                !overflow
-            }
-            .forEach {
-                val kind = it.kind()
-
-                val event = it as WatchEvent<Path>
-                val context = event.context()
-                // This is required to make #isDirectory() work
-                val file = directoryToWatch.resolve(context).toAbsolutePath().toFile()
-
-                if (isOrWasDirectory(file)) {
-                    handleDirectoryEvent(file, kind)
-                } else {
-                    handleFileEvent(file, kind)
-                }
-            }
-    }
-
-    private fun isOrWasDirectory(file: File): Boolean = file.isDirectory || subDirectoryWatchers.containsKey(file.name)
-
-    private suspend fun handleFileEvent(file: File, kind: WatchEvent.Kind<out Any>?) {
-        when (kind) {
-            ENTRY_CREATE -> fileEvents.send(FileEvent(file.canonicalPath, FileEvent.EventType.CREATED))
-            ENTRY_MODIFY -> fileEvents.send(FileEvent(file.canonicalPath, FileEvent.EventType.MODIFIED))
-            ENTRY_DELETE -> fileEvents.send(FileEvent(file.canonicalPath, FileEvent.EventType.DELETED))
-        }
-    }
-
-    private fun handleDirectoryEvent(file: File, kind: WatchEvent.Kind<out Any>?) {
-        if (kind == ENTRY_DELETE && subDirectoryWatchers.containsKey(file.name)) {
-            logger.debug("Directory ${file.name} has been removed")
-            subDirectoryWatchers.remove(file.name)
+    fun start() {
+        if (watchJob != null) {
+            logger.warn("DirectoryWatcher for {} already started", root.toAbsolutePath())
             return
         }
 
-        if (kind == ENTRY_CREATE) {
-            logger.debug("Directory ${file.name} added")
-            val subDirectoryWatcher = DirectoryWatcher(file.canonicalPath, fileEvents)
-            subDirectoryWatchers[file.name] = subDirectoryWatcher
-            subDirectoryWatcher.watch()
+        registerDirectory(root)
+        scanRootForDirectories(root)
+
+        watchJob = GlobalScope.launch {
+            watch(coroutineContext)
+        }
+        logger.debug("DirectoryWatcher for {} started", root.toAbsolutePath())
+    }
+
+    private fun scanRootForDirectories(root: Path) {
+        Files.walkFileTree(root, setOf(FileVisitOption.FOLLOW_LINKS),
+            MAX_DEPTH, object : SimpleFileVisitor<Path>() {
+                override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+                    registerDirectory(dir)
+                    return FileVisitResult.CONTINUE
+                }
+            })
+    }
+
+    private fun registerDirectory(directory: Path) {
+        val key: WatchKey = directory.register(
+            watchService,
+            StandardWatchEventKinds.ENTRY_CREATE,
+            StandardWatchEventKinds.ENTRY_DELETE,
+            StandardWatchEventKinds.ENTRY_MODIFY
+        )
+        keyMap[key] = directory
+        directorySet.add(directory)
+        logger.debug("Registered {} for watching", directory.toString())
+    }
+
+    private fun unregisterDirectory(watchKey: WatchKey) {
+        keyMap.remove(watchKey)?.also {
+            directorySet.remove(it)
+            logger.info("Stop watching directory {}", it.toString())
         }
     }
 
+    private fun watch(coroutineContext: CoroutineContext) {
+        while (coroutineContext.isActive) {
+            waitForFileSystemEvent()?.let {
+                it.handleEvents()
+                if (!it.reset()) {
+                    unregisterDirectory(it)
+                }
+            }
+        }
+    }
+
+    private fun waitForFileSystemEvent(): WatchKey? {
+        var watchKey: WatchKey? = null
+        try {
+            watchKey = watchService.take()
+        } catch (e: InterruptedException) {
+            logger.error("Interrupted while waiting", e)
+        } catch (e: ClosedWatchServiceException) {
+            logger.debug("watch service is closed")
+        }
+        return watchKey
+    }
+
+    private fun WatchKey.handleEvents() {
+        pollEvents().forEach {
+            val kind = it.kind()
+            if (kind == StandardWatchEventKinds.OVERFLOW) {
+                logger.error("Watch overflow")
+                return@forEach
+            }
+
+            resolvePath(this, it)?.let {
+                if (Files.isDirectory(it)) {
+                    registerDirectory(it)
+                }
+
+                when (kind) {
+                    StandardWatchEventKinds.ENTRY_CREATE -> callback.created(it, it.toEntryType())
+                    StandardWatchEventKinds.ENTRY_MODIFY -> callback.modified(it, it.toEntryType())
+                    StandardWatchEventKinds.ENTRY_DELETE -> callback.deleted(it, it.toEntryType())
+                }
+            }
+        }
+    }
+
+    private fun Path.toEntryType(): EntryType = if (Files.isDirectory(this) || this in directorySet) {
+        EntryType.DIRECTORY
+    } else {
+        EntryType.FILE
+    }
+
+    private fun resolvePath(watchKey: WatchKey, event: WatchEvent<*>): Path? {
+        val child = pathFromWatchEvent(event)
+        val parent = keyMap[watchKey]
+        return parent?.resolve(child)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun pathFromWatchEvent(event: WatchEvent<*>): Path = (event as WatchEvent<Path>).context()
+
+    override fun close() {
+        logger.debug("Stopping watch service")
+        watchService.close()
+        runBlocking { watchJob?.cancelAndJoin() }
+        watchJob = null
+    }
+
+    private companion object {
+        val logger = LoggerFactory.getLogger(DirectoryWatcher::class.java)
+        const val MAX_DEPTH = 100
+    }
 }

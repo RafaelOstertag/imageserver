@@ -6,8 +6,8 @@ import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
-import java.io.File
 import java.io.OutputStream
+import java.nio.file.Path
 import javax.imageio.ImageIO
 
 
@@ -16,19 +16,19 @@ class Image(bufferedImage: BufferedImage) {
     val width get() = image.width
     val height get() = image.height
 
-    constructor(imageFile: File) : this(ImageIO.read(imageFile))
+    constructor(imageFile: Path) : this(ImageIO.read(imageFile.toFile()))
 
     fun resizeToMatch(targetWidth: Int, targetHeight: Int): Image {
         val resizedImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB)
         val affineTransform: AffineTransform
 
         if (targetWidth == targetHeight) {
-            if (width > height) {
+            affineTransform = if (width > height) {
                 val scaleFactor = targetHeight / height.toDouble()
-                affineTransform = AffineTransform.getScaleInstance(scaleFactor, scaleFactor)
+                AffineTransform.getScaleInstance(scaleFactor, scaleFactor)
             } else {
                 val scaleFactor = targetWidth / width.toDouble()
-                affineTransform = AffineTransform.getScaleInstance(scaleFactor, scaleFactor)
+                AffineTransform.getScaleInstance(scaleFactor, scaleFactor)
 
             }
         } else if (targetWidth > targetHeight) {
@@ -63,7 +63,9 @@ class Image(bufferedImage: BufferedImage) {
     }
 
     companion object {
-        val imagePattern = ".*\\.(?:jpe?g|png|gif)$"
+        private const val imagePattern = ".*\\.(?:jpe?g|png|gif)$"
+        val imagePatternMatcher = Regex(imagePattern, RegexOption.IGNORE_CASE)
+
     }
 
 }
