@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'ch.guengel'
-version '1.0.0-SNAPSHOT'
+version '1.0.0'
 
 repositories {
     mavenCentral()
@@ -36,7 +36,7 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
 }
 
-task uberJar(type: Jar) {
+jar {
     from sourceSets.main.output
 
     manifest {
@@ -47,10 +47,6 @@ task uberJar(type: Jar) {
     from {
         configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
-}
-
-assemble {
-    dependsOn(uberJar)
 }
 
 publishing {
