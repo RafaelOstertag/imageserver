@@ -38,7 +38,10 @@ class ImageService(root: Path) {
         GlobalScope.launch {
             logger.info("Start updating image list")
             allImages.clear()
-            allImages.addAll(imageLister.images())
+            for (path in imageLister.getImages()) {
+                allImages.add(path)
+            }
+
             logger.info("Done updating image list: {} image(s)", allImages.size)
         }
     }
