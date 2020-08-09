@@ -18,7 +18,7 @@ fun Application.setupMetrics() {
     }
 
     routing {
-        get("/prometheus") {
+        get("/metrics") {
             val result = registry.scrape()
             call.respond(result)
         }
