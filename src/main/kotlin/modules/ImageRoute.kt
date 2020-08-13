@@ -32,14 +32,9 @@ fun Application.imageRoute() {
         }
 
         put("/images") {
-            val doUpdate = call.parameters["update"]?.toBoolean()
-                ?: throw java.lang.IllegalArgumentException("missing update query")
-            if (doUpdate) {
-                imageService.readAll()
-                call.respond(HttpStatusCode.NoContent)
-            } else {
-                call.respond(HttpStatusCode.OK)
-            }
+            call.parameters["update"] ?: throw java.lang.IllegalArgumentException("missing update query")
+            imageService.readAll()
+            call.respond(HttpStatusCode.NoContent)
         }
     }
 }
