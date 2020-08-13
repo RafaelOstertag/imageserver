@@ -22,7 +22,9 @@ class ImageService(root: Path) {
     private val rng = ThreadLocalRandom.current().asKotlinRandom()
 
     init {
-        readAll()
+        GlobalScope.launch {
+            readAll()
+        }
         listenToEvents()
         directoryWatcher.start()
     }
@@ -34,16 +36,14 @@ class ImageService(root: Path) {
         return originalImage.resizeToMatch(width, height)
     }
 
-    private fun readAll() {
-        GlobalScope.launch {
-            logger.info("Start updating image list")
-            allImages.clear()
-            for (path in imageLister.getImages()) {
-                allImages.add(path)
-            }
-
-            logger.info("Done updating image list: {} image(s)", allImages.size)
+    suspend fun readAll() {
+        logger.info("Start updating image list")
+        allImages.clear()
+        for (path in imageLister.getImages()) {
+            allImages.add(path)
         }
+
+        logger.info("Done updating image list: {} image(s)", allImages.size)
     }
 
     private fun listenToEvents() {
