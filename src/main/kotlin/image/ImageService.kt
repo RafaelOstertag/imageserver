@@ -10,16 +10,18 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentSkipListSet
-import java.util.concurrent.ThreadLocalRandom
-import kotlin.random.asKotlinRandom
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.random.Random
 
+private const val defaultExclusionPattern = "^$"
 class ImageService(root: Path) {
     private val imageLister = ImageLister(root)
     private val imageEvents = Channel<ImageEvent>()
     private val imageEventCallback = ImageEventCallback(imageEvents, Image.imagePatternMatcher)
     private val directoryWatcher = DirectoryWatcher(root, imageEventCallback)
     private var allImages = ConcurrentSkipListSet<Path>()
-    private val rng = ThreadLocalRandom.current().asKotlinRandom()
+    private val rng = Random(System.currentTimeMillis())
+    private var excludeRegexRef = AtomicReference<Regex>(Regex(defaultExclusionPattern))
 
     init {
         GlobalScope.launch {
@@ -30,10 +32,30 @@ class ImageService(root: Path) {
     }
 
     fun getRandomImage(width: Int, height: Int): Image {
-        val image = allImages.random(rng)
+        val image = randomImagePath()
         logger.info("Serving image {}", image)
         val originalImage = Image(image)
         return originalImage.resizeToMatch(width, height)
+    }
+
+    fun setExclusionPattern(pattern: String) {
+        excludeRegexRef.set(Regex(pattern))
+    }
+
+    fun resetExclusionPattern() {
+        excludeRegexRef.set(Regex(defaultExclusionPattern))
+    }
+
+    fun getExclusionPattern(): String = excludeRegexRef.get().pattern
+
+    private fun randomImagePath(): Path {
+        var image = allImages.random(rng)
+        val excludeRegex = excludeRegexRef.get()
+        // That's the lazy version. It's ok for my use case.
+        while (excludeRegex.containsMatchIn(image.toString())) {
+            image = allImages.random(rng)
+        }
+        return image
     }
 
     suspend fun readAll() {
