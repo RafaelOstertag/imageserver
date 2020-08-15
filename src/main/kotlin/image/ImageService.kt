@@ -28,16 +28,22 @@ class ImageService(private val root: Path) {
     }
 
     fun setExclusionPattern(pattern: String) {
-        excludeRegexRef.set(Regex(pattern))
-        GlobalScope.launch {
-            readAll()
+        val newRegex = Regex(pattern)
+        val oldRegex = excludeRegexRef.getAndSet(newRegex)
+        if (newRegex.toString() != oldRegex.toString()) {
+            GlobalScope.launch {
+                readAll()
+            }
         }
     }
 
     fun resetExclusionPattern() {
-        excludeRegexRef.set(Regex(defaultExclusionPattern))
-        GlobalScope.launch {
-            readAll()
+        val newRegex = Regex(defaultExclusionPattern)
+        val oldRegex = excludeRegexRef.getAndSet(newRegex)
+        if (oldRegex.toString() != newRegex.toString()) {
+            GlobalScope.launch {
+                readAll()
+            }
         }
     }
 
