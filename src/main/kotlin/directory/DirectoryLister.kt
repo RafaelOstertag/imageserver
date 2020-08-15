@@ -9,25 +9,34 @@ import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 
-class DirectoryLister(private val directory: Path, private val patternMatcher: Regex) {
-    private val directoryAsFile = directory.toFile()
+class DirectoryLister(
+    private val directory: Path,
+    private val includePattern: Regex,
+    private val excludePattern: Regex
+) {
 
     fun getFiles(): Channel<Path> {
         val channel = Channel<Path>()
         GlobalScope.launch(Dispatchers.IO) {
-            Files.walkFileTree(directory, FileVisitor(channel, patternMatcher))
+            Files.walkFileTree(directory, FileVisitor(channel, includePattern, excludePattern))
             channel.close()
         }
         return channel
     }
 
 
-    private class FileVisitor(private val channel: Channel<Path>, private val patternMatcher: Regex) :
+    private class FileVisitor(
+        private val channel: Channel<Path>,
+        private val includePattern: Regex,
+        private val excludePattern: Regex
+    ) :
         SimpleFileVisitor<Path>() {
 
         override fun visitFile(file: Path?, attrs: BasicFileAttributes?): FileVisitResult {
             file?.takeIf {
-                patternMatcher.matches(it.toString())
+                includePattern.matches(it.toString())
+            }?.takeUnless {
+                excludePattern.matches(it.toString())
             }?.let {
                 runBlocking {
                     try {

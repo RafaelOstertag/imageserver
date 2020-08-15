@@ -5,9 +5,9 @@ import kotlinx.coroutines.channels.Channel
 import java.nio.file.Path
 
 
-class ImageLister(directory: Path) {
+class ImageLister(directory: Path, excludePattern: Regex) {
     private val directoryLister =
-        DirectoryLister(directory, Image.imagePatternMatcher)
+        DirectoryLister(directory, Image.imagePatternMatcher, excludePattern)
 
     fun getImages(): Channel<Path> = directoryLister.getFiles()
 }

@@ -9,8 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 private const val defaultExclusionPattern = "^$"
-class ImageService(root: Path) {
-    private val imageLister = ImageLister(root)
+class ImageService(private val root: Path) {
     private var allImages = ConcurrentSkipListSet<Path>()
     private val rng = Random(System.currentTimeMillis())
     private var excludeRegexRef = AtomicReference<Regex>(Regex(defaultExclusionPattern))
@@ -22,7 +21,7 @@ class ImageService(root: Path) {
     }
 
     fun getRandomImage(width: Int, height: Int): Image {
-        val image = randomImagePath()
+        val image = allImages.random(rng)
         logger.info("Serving image {}", image)
         val originalImage = Image(image)
         return originalImage.resizeToMatch(width, height)
@@ -30,26 +29,23 @@ class ImageService(root: Path) {
 
     fun setExclusionPattern(pattern: String) {
         excludeRegexRef.set(Regex(pattern))
+        GlobalScope.launch {
+            readAll()
+        }
     }
 
     fun resetExclusionPattern() {
         excludeRegexRef.set(Regex(defaultExclusionPattern))
+        GlobalScope.launch {
+            readAll()
+        }
     }
 
     fun getExclusionPattern(): String = excludeRegexRef.get().pattern
 
-    private fun randomImagePath(): Path {
-        var image = allImages.random(rng)
-        val excludeRegex = excludeRegexRef.get()
-        // That's the lazy version. It's ok for my use case.
-        while (excludeRegex.containsMatchIn(image.toString())) {
-            image = allImages.random(rng)
-        }
-        return image
-    }
-
     suspend fun readAll() {
         logger.info("Start updating image list")
+        val imageLister = ImageLister(root, excludeRegexRef.get())
         allImages.clear()
         for (path in imageLister.getImages()) {
             allImages.add(path)
