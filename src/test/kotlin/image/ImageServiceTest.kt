@@ -1,8 +1,7 @@
-package image
+package ch.guengel.imageserver.image
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import ch.guengel.imageserver.image.ImageService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
