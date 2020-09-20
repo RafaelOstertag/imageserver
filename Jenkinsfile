@@ -43,7 +43,7 @@ pipeline {
 
         stage("Build & Push Docker Image") {
             agent {
-                label "arm64&&docker"
+                label "amd64&&docker"
             }
 
             when {
