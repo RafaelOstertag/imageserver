@@ -9,4 +9,4 @@ COPY --from=download /tmp/app.jar /
 USER 424242
 
 ENTRYPOINT ["/usr/local/openjdk-11/bin/java"]
-CMD ["-jar", "/app.jar"]
+CMD ["-Dlogback.configurationFile=logback-graylog.xml", "-jar", "/app.jar"]
