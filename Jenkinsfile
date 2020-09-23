@@ -80,14 +80,7 @@ pipeline {
 
             steps {
                 withKubeConfig(credentialsId: 'a9fe556b-01b0-4354-9a65-616baccf9cac') {
-                    sh """
-if ! helm status -n imageserver imageserver
-then
-  helm install -n imageserver --set image.tag=${env.VERSION} imageserver helm/imageserver
-else
-  helm upgrade -n imageserver --set image.tag=${env.VERSION} imageserver helm/imageserver
-fi
-"""
+                    sh "helm upgrade -n imageserver -i --set image.tag=${env.VERSION} imageserver helm/imageserver"
                 }
             }
         }
