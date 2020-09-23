@@ -1,7 +1,7 @@
 FROM curlimages/curl:latest AS download
 ARG VERSION
 # We use a non-trusted CA, so we have to fall back to curl instead of directly using 'ADD ...'
-RUN curl -k -o /tmp/app.jar https://colossus.kruemel.home/nexus/repository/imageserver/ch/guengel/imageserver/$VERSION/imageserver-$VERSION.jar
+RUN curl -fk -o /tmp/app.jar https://colossus.kruemel.home/nexus/repository/imageserver/ch/guengel/imageserver/$VERSION/imageserver-$VERSION.jar
 
 FROM openjdk:11-jre-slim
 
