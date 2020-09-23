@@ -56,9 +56,9 @@ pipeline {
             }
 
             steps {
+                sh "docker build --build-arg 'VERSION=${env.VERSION}' -t rafaelostertag/imageserver:${env.VERSION} docker"
                 withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                     sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
-                    sh "docker build --build-arg 'VERSION=${env.VERSION}' -t rafaelostertag/imageserver:${env.VERSION} docker"
                     sh "docker push rafaelostertag/imageserver:${env.VERSION}"
                 }
             }
