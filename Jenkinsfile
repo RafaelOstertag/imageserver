@@ -14,13 +14,22 @@ pipeline {
     }
 
     triggers {
+        pollSCM '@hourly'
         cron '@daily'
     }
 
     stages {
         stage("Build & test") {
             steps {
-                sh "./gradlew test"
+                sh "./gradlew build test"
+            }
+        }
+
+        stage("Sonarcloud") {
+            steps {
+                withCredentials([string(credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f', variable: 'SONAR_TOKEN')]) {
+                    sh './gradlew sonarqube'
+                }
             }
         }
 
