@@ -9,8 +9,9 @@ pipeline {
 
     options {
         ansiColor('xterm')
-        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
+        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '15')
         timestamps()
+        disableConcurrentBuilds()
     }
 
     triggers {
@@ -27,7 +28,7 @@ pipeline {
 
         stage("Sonarcloud") {
             steps {
-                withCredentials([string(credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f', variable: 'SONAR_TOKEN')]) {
+                withSonarQubeEnv(installationName: 'Sonarcloud', credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f') {
                     sh './gradlew sonarqube'
                 }
             }
