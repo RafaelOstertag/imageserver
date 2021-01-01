@@ -34,6 +34,13 @@ pipeline {
             }
         }
 
+        stage("Check Dependencies") {
+            steps {
+                dependencyCheck additionalArguments: '''--suppression dependency-check-suppression.xml''', odcInstallation: 'Latest'
+                dependencyCheckPublisher failedTotalCritical: 1, failedTotalHigh: 5, failedTotalLow: 8, failedTotalMedium: 8, pattern: '', unstableTotalCritical: 0, unstableTotalHigh: 4, unstableTotalLow: 8, unstableTotalMedium: 8
+            }
+        }
+
         stage("Nexus Deployment") {
             when {
                 allOf {
