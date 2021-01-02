@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'kotlin'
+        label 'linux&&kotlin'
     }
 
     environment {
@@ -9,18 +9,35 @@ pipeline {
 
     options {
         ansiColor('xterm')
-        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
+        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '15')
         timestamps()
+        disableConcurrentBuilds()
     }
 
     triggers {
+        pollSCM '@hourly'
         cron '@daily'
     }
 
     stages {
         stage("Build & test") {
             steps {
-                sh "./gradlew test"
+                sh "./gradlew build test"
+            }
+        }
+
+        stage("Sonarcloud") {
+            steps {
+                withSonarQubeEnv(installationName: 'Sonarcloud', credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f') {
+                    sh './gradlew sonarqube'
+                }
+            }
+        }
+
+        stage("Check Dependencies") {
+            steps {
+                sh './gradlew dependencyCheckAnalyze'
+                dependencyCheckPublisher failedTotalCritical: 1, failedTotalHigh: 5, failedTotalLow: 8, failedTotalMedium: 8, pattern: '**/dependency-check-report.xml', unstableTotalCritical: 0, unstableTotalHigh: 4, unstableTotalLow: 8, unstableTotalMedium: 8
             }
         }
 
@@ -43,7 +60,7 @@ pipeline {
 
         stage("Build & Push Docker Image") {
             agent {
-                label "amd64&&docker"
+                label "arm64&&docker"
             }
 
             when {
@@ -56,9 +73,9 @@ pipeline {
             }
 
             steps {
+                sh "docker build --build-arg 'VERSION=${env.VERSION}' -t rafaelostertag/imageserver:${env.VERSION} docker"
                 withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                     sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
-                    sh "docker build --build-arg 'VERSION=${env.VERSION}' -t rafaelostertag/imageserver:${env.VERSION} docker"
                     sh "docker push rafaelostertag/imageserver:${env.VERSION}"
                 }
             }
@@ -80,14 +97,7 @@ pipeline {
 
             steps {
                 withKubeConfig(credentialsId: 'a9fe556b-01b0-4354-9a65-616baccf9cac') {
-                    sh """
-if ! helm status -n imageserver imageserver
-then
-  helm install -n imageserver --set image.tag=${env.VERSION} imageserver helm/imageserver
-else
-  helm upgrade -n imageserver --set image.tag=${env.VERSION} imageserver helm/imageserver
-fi
-"""
+                    sh "helm upgrade -n imageserver -i --set image.tag=${env.VERSION} imageserver helm/imageserver"
                 }
             }
         }
