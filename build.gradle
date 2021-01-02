@@ -16,11 +16,13 @@ repositories {
 dependencies {
     def ktorVersion = "1.5.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
     implementation "io.ktor:ktor-server-netty:$ktorVersion"
     implementation "org.slf4j:slf4j-api:1.7.30"
     implementation "ch.qos.logback:logback-classic:1.2.3"
     implementation "biz.paluch.logging:logstash-gelf:1.14.1"
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.1.3'
+    // Keep this in sync with ktor-metrics-micrometer
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.6.2'
     implementation "io.ktor:ktor-metrics-micrometer:$ktorVersion"
     implementation "io.ktor:ktor-gson:$ktorVersion"
 
