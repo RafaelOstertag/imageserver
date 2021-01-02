@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'kotlin'
+        label 'linux&&kotlin'
     }
 
     environment {
