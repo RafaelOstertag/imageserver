@@ -97,7 +97,7 @@ pipeline {
 
             steps {
                 withKubeConfig(credentialsId: 'a9fe556b-01b0-4354-9a65-616baccf9cac') {
-                    sh "helm upgrade -n imageserver -i --set image.tag=${env.VERSION} imageserver helm/imageserver"
+                    sh "helm upgrade -n imageserver -i --set ch.guengel.imageserver.image.tag=${env.VERSION} imageserver helm/imageserver"
                 }
             }
         }
