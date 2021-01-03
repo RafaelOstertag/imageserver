@@ -1,9 +1,8 @@
 package ch.guengel.imageserver.modules
 
-import io.ktor.application.Application
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
-import io.ktor.gson.gson
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.gson.*
 import java.text.DateFormat
 
 fun Application.setupContentNegotiation() {
@@ -13,5 +12,4 @@ fun Application.setupContentNegotiation() {
             setPrettyPrinting()
         }
     }
-
 }

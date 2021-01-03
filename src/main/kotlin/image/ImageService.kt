@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 private const val defaultExclusionPattern = "^$"
+
 class ImageService(private val root: Path) {
     private var allImages = ConcurrentSkipListSet<Path>()
     private val rng = Random(System.currentTimeMillis())
@@ -59,7 +60,6 @@ class ImageService(private val root: Path) {
 
         logger.info("Done updating image list: {} image(s)", allImages.size)
     }
-
 
     companion object {
         private val logger = LoggerFactory.getLogger(ImageService::class.java)

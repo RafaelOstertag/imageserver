@@ -1,25 +1,17 @@
 package ch.guengel.imageserver.modules
 
 import ch.guengel.imageserver.image.ImageService
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.log
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.response.respondOutputStream
-import io.ktor.routing.delete
-import io.ktor.routing.get
-import io.ktor.routing.put
-import io.ktor.routing.routing
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
 import java.nio.file.Path
 import java.util.regex.PatternSyntaxException
 
 fun Application.imageRoute() {
     val imageDirectory = environment.config.property("images.directory").getString()
     log.info("Read images from '{}'", imageDirectory)
-
 
     val imageService = ImageService(Path.of(imageDirectory))
     routing {

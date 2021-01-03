@@ -24,7 +24,6 @@ class DirectoryLister(
         return channel
     }
 
-
     private class FileVisitor(
         private val channel: Channel<Path>,
         private val includePattern: Regex,
