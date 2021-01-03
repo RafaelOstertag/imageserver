@@ -22,7 +22,14 @@ pipeline {
     stages {
         stage("Build & test") {
             steps {
-                sh "./gradlew build test"
+                sh "./gradlew build check"
+            }
+
+             post {
+                always {
+                    junit '**/test-results/test/*.xml'
+                    jacoco()
+                }
             }
         }
 
