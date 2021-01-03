@@ -29,7 +29,7 @@ pipeline {
         stage("Sonarcloud") {
             steps {
                 withSonarQubeEnv(installationName: 'Sonarcloud', credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f') {
-                    sh './gradlew sonarqube'
+                    sh "./gradlew -Dsonar.branch.name=${env.BRANCH_NAME} sonarqube"
                 }
             }
         }
