@@ -68,7 +68,7 @@ pipeline {
 
             steps {
                 withCredentials([usernamePassword(credentialsId: '023b356d-2960-4b97-9d55-9e621c0b7461', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                    sh './gradlew publish -PpublishUser="${USERNAME}" -PpublishPassword="${PASSWORD}"'
+                    sh './gradlew -Dorg.gradle.daemon=false publish -PpublishUser="${USERNAME}" -PpublishPassword="${PASSWORD}"'
                 }
             }
         }
