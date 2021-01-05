@@ -1,3 +1,4 @@
+# @formatter:off
 apiVersion: v2
 name: imageserver
 description: Helm chart for imageserver

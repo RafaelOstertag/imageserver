@@ -1,4 +1,4 @@
-{{/*
+{{/* @formatter:off
 Expand the name of the chart.
 */}}
 {{- define "imageserver.name" -}}
