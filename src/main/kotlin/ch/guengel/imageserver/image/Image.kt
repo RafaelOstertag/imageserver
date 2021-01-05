@@ -1,6 +1,5 @@
 package ch.guengel.imageserver.image
 
-
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
@@ -9,7 +8,6 @@ import java.awt.image.BufferedImage
 import java.io.OutputStream
 import java.nio.file.Path
 import javax.imageio.ImageIO
-
 
 class Image(bufferedImage: BufferedImage) {
     private val image: BufferedImage = removeAlpha(bufferedImage)
@@ -29,7 +27,6 @@ class Image(bufferedImage: BufferedImage) {
             } else {
                 val scaleFactor = targetWidth / width.toDouble()
                 AffineTransform.getScaleInstance(scaleFactor, scaleFactor)
-
             }
         } else if (targetWidth > targetHeight) {
             val scaleFactor = targetWidth / width.toDouble()
@@ -65,7 +62,5 @@ class Image(bufferedImage: BufferedImage) {
     companion object {
         private const val imagePattern = ".*\\.(?:jpe?g|png|gif)$"
         val imagePatternMatcher = Regex(imagePattern, RegexOption.IGNORE_CASE)
-
     }
-
 }

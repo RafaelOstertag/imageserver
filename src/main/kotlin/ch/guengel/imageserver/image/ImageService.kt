@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 private const val defaultExclusionPattern = "^$"
+
 class ImageService(private val root: Path) {
     private var allImages = ConcurrentSkipListSet<Path>()
     private val rng = Random(System.currentTimeMillis())
@@ -22,7 +23,7 @@ class ImageService(private val root: Path) {
 
     fun getRandomImage(width: Int, height: Int): Image {
         val image = allImages.random(rng)
-        logger.info("Serving image {}", image)
+        logger.info("Serving ch.guengel.imageserver.image {}", image)
         val originalImage = Image(image)
         return originalImage.resizeToMatch(width, height)
     }
@@ -50,16 +51,18 @@ class ImageService(private val root: Path) {
     fun getExclusionPattern(): String = excludeRegexRef.get().pattern
 
     suspend fun readAll() {
-        logger.info("Start updating image list")
+        logger.info("Start updating ch.guengel.imageserver.image list")
         val imageLister = ImageLister(root, excludeRegexRef.get())
         allImages.clear()
         for (path in imageLister.getImages()) {
             allImages.add(path)
         }
 
-        logger.info("Done updating image list: {} image(s)", allImages.size)
+        logger.info(
+            "Done updating ch.guengel.imageserver.image list: {} ch.guengel.imageserver.image(s)",
+            allImages.size
+        )
     }
-
 
     companion object {
         private val logger = LoggerFactory.getLogger(ImageService::class.java)

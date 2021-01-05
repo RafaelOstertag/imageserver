@@ -12,34 +12,34 @@
    file name: kotlin-script-runtime-1.4.21.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-script\-runtime@.*$</packageUrl>
-        <cpe>cpe:/a:jetbrains:kotlin</cpe>
+        <cve>CVE-2020-15824</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
    file name: kotlin-stdlib-1.4.21.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-stdlib@.*$</packageUrl>
-        <cpe>cpe:/a:jetbrains:kotlin</cpe>
+        <cve>CVE-2020-15824</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
    file name: kotlin-stdlib-common-1.4.21.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-stdlib\-common@.*$</packageUrl>
-        <cpe>cpe:/a:jetbrains:kotlin</cpe>
+        <cve>CVE-2020-15824</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
    file name: kotlin-stdlib-jdk7-1.4.21.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-stdlib\-jdk7@.*$</packageUrl>
-        <cpe>cpe:/a:jetbrains:kotlin</cpe>
+        <cve>CVE-2020-15824</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
    file name: kotlin-stdlib-jdk8-1.4.21.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin\-stdlib\-jdk8@.*$</packageUrl>
-        <cpe>cpe:/a:jetbrains:kotlin</cpe>
+        <cve>CVE-2020-15824</cve>
     </suppress>
 </suppressions>

@@ -22,14 +22,29 @@ pipeline {
     stages {
         stage("Build & test") {
             steps {
-                sh "./gradlew build test"
+                sh "./gradlew build check"
+            }
+
+             post {
+                always {
+                    junit '**/test-results/test/*.xml'
+                    jacoco()
+                }
             }
         }
 
         stage("Sonarcloud") {
             steps {
                 withSonarQubeEnv(installationName: 'Sonarcloud', credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f') {
-                    sh './gradlew sonarqube'
+                    sh "./gradlew -Dsonar.branch.name=${env.BRANCH_NAME} sonarqube"
+                }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -97,7 +112,7 @@ pipeline {
 
             steps {
                 withKubeConfig(credentialsId: 'a9fe556b-01b0-4354-9a65-616baccf9cac') {
-                    sh "helm upgrade -n imageserver -i --set image.tag=${env.VERSION} imageserver helm/imageserver"
+                    sh "helm upgrade -n imageserver -i --set ch.guengel.imageserver.image.tag=${env.VERSION} imageserver helm/imageserver"
                 }
             }
         }

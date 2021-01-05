@@ -4,7 +4,6 @@ import ch.guengel.imageserver.directory.DirectoryLister
 import kotlinx.coroutines.channels.Channel
 import java.nio.file.Path
 
-
 class ImageLister(directory: Path, excludePattern: Regex) {
     private val directoryLister =
         DirectoryLister(directory, Image.imagePatternMatcher, excludePattern)

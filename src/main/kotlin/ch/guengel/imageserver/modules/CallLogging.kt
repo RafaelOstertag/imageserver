@@ -1,8 +1,7 @@
 package ch.guengel.imageserver.modules
 
-import io.ktor.application.Application
-import io.ktor.application.install
-import io.ktor.features.CallLogging
+import io.ktor.application.*
+import io.ktor.features.*
 import org.slf4j.event.Level
 
 fun Application.setupCallLogging() {
