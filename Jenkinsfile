@@ -22,7 +22,7 @@ pipeline {
     stages {
         stage("Build & test") {
             steps {
-                sh "./gradlew build check"
+                sh "./gradlew -Dorg.gradle.daemon=false build check"
             }
 
              post {
@@ -36,7 +36,7 @@ pipeline {
         stage("Sonarcloud") {
             steps {
                 withSonarQubeEnv(installationName: 'Sonarcloud', credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f') {
-                    sh "./gradlew -Dsonar.branch.name=${env.BRANCH_NAME} sonarqube"
+                    sh "./gradlew -Dorg.gradle.daemon=false -Dsonar.branch.name=${env.BRANCH_NAME} sonarqube"
                 }
             }
         }
@@ -51,7 +51,7 @@ pipeline {
 
         stage("Check Dependencies") {
             steps {
-                sh './gradlew dependencyCheckAnalyze'
+                sh './gradlew -Dorg.gradle.daemon=false dependencyCheckAnalyze'
                 dependencyCheckPublisher failedTotalCritical: 1, failedTotalHigh: 5, failedTotalLow: 8, failedTotalMedium: 8, pattern: '**/dependency-check-report.xml', unstableTotalCritical: 0, unstableTotalHigh: 4, unstableTotalLow: 8, unstableTotalMedium: 8
             }
         }
