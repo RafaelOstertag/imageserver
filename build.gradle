@@ -8,7 +8,7 @@ plugins {
 }
 
 group 'ch.guengel'
-version '2.0.11'
+version '2.0.12-SNAPSHOT'
 
 repositories {
     mavenCentral()
