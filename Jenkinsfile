@@ -73,47 +73,16 @@ pipeline {
             }
         }
 
-        stage("Build & Push Docker Image") {
-            agent {
-                label "arm64&&docker"
-            }
-
+        stage('Trigger k8s deployment') {
             when {
-                allOf {
-                    not {
-                        triggeredBy 'TimerTrigger'
-                    }
-                    branch "master"
+                branch 'master'
+                not {
+                    triggeredBy "TimerTrigger"
                 }
             }
 
             steps {
-                sh "docker build --build-arg 'VERSION=${env.VERSION}' -t rafaelostertag/imageserver:${env.VERSION} docker"
-                withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                    sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
-                    sh "docker push rafaelostertag/imageserver:${env.VERSION}"
-                }
-            }
-        }
-
-        stage("Deploy to k8s") {
-            agent {
-                label "helm"
-            }
-
-            when {
-                allOf {
-                    not {
-                        triggeredBy 'TimerTrigger'
-                    }
-                    branch "master"
-                }
-            }
-
-            steps {
-                withKubeConfig(credentialsId: 'a9fe556b-01b0-4354-9a65-616baccf9cac') {
-                    sh "helm upgrade -n imageserver -i --set image.tag=${env.VERSION} imageserver helm/imageserver"
-                }
+                build wait: false, job: '../docker/imageserver', parameters: [string(name: 'VERSION', value: env.VERSION), booleanParam(name: 'DEPLOY', value: true)]
             }
         }
     }
