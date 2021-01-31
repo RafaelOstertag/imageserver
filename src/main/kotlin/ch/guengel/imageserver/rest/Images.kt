@@ -1,6 +1,5 @@
 package ch.guengel.imageserver.rest
 
-import ch.guengel.imageserver.image.Image
 import ch.guengel.imageserver.image.ImageService
 import io.smallrye.mutiny.Uni
 import kotlinx.coroutines.GlobalScope
@@ -17,10 +16,11 @@ class Images(@Inject private val imageService: ImageService) {
     @GET
     @Path("/{width}/{height}")
     @Produces("image/jpeg")
-    fun getImage(width: Int, height: Int): Uni<Image> {
-        val randomImage = imageService.getRandomImage(width, height)
-        return Uni.createFrom().item(randomImage)
-    }
+    fun getImage(width: Int, height: Int): Uni<ByteArray> = Uni
+        .createFrom()
+        .item(imageService.getRandomImage(width, height))
+        .onItem()
+        .transform { it.toByteArray() }
 
     @PUT
     @Path("/")
@@ -33,6 +33,14 @@ class Images(@Inject private val imageService: ImageService) {
             imageService.readAll()
         }
         return Uni.createFrom().item(Response.noContent().build())
+    }
+
+    @GET
+    @Path("/exclusions")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getExclusions(): Uni<ExclusionPattern> {
+        return Uni.createFrom().item(imageService.getExclusionPattern())
+            .onItem().transform { ExclusionPattern(it) }
     }
 
     @PUT
