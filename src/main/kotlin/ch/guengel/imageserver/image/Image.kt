@@ -5,6 +5,7 @@ import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.file.Path
 import javax.imageio.ImageIO
@@ -39,7 +40,7 @@ class Image(bufferedImage: BufferedImage) {
         val scaleOp = AffineTransformOp(affineTransform, AffineTransformOp.TYPE_BILINEAR)
         scaleOp.filter(image, resizedImage)
 
-        return Image(removeAlpha(resizedImage))
+        return Image(resizedImage)
     }
 
     private fun removeAlpha(resizedImage: BufferedImage): BufferedImage {
@@ -57,6 +58,12 @@ class Image(bufferedImage: BufferedImage) {
 
     fun write(outputStream: OutputStream) {
         ImageIO.write(image, "jpeg", outputStream)
+    }
+
+    fun toByteArray(): ByteArray {
+        val outputStream = ByteArrayOutputStream()
+        write(outputStream)
+        return outputStream.toByteArray()
     }
 
     companion object {

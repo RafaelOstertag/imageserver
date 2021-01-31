@@ -2,28 +2,32 @@ package ch.guengel.imageserver.image
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.slf4j.LoggerFactory
+import kotlinx.coroutines.runBlocking
+import org.eclipse.microprofile.config.inject.ConfigProperty
+import org.jboss.logging.Logger
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.atomic.AtomicReference
+import javax.inject.Singleton
 import kotlin.random.Random
 
 private const val defaultExclusionPattern = "^$"
 
-class ImageService(private val root: Path) {
+@Singleton
+class ImageService(@ConfigProperty(name = "images.directory") private val root: Path) {
     private var allImages = ConcurrentSkipListSet<Path>()
     private val rng = Random(System.currentTimeMillis())
     private var excludeRegexRef = AtomicReference<Regex>(Regex(defaultExclusionPattern))
 
     init {
-        GlobalScope.launch {
+        runBlocking {
             readAll()
         }
     }
 
     fun getRandomImage(width: Int, height: Int): Image {
         val image = allImages.random(rng)
-        logger.info("Serving ch.guengel.imageserver.image {}", image)
+        logger.info("Serving ch.guengel.imageserver.image $image")
         val originalImage = Image(image)
         return originalImage.resizeToMatch(width, height)
     }
@@ -59,12 +63,10 @@ class ImageService(private val root: Path) {
         }
 
         logger.info(
-            "Done updating ch.guengel.imageserver.image list: {} ch.guengel.imageserver.image(s)",
-            allImages.size
+            "Done updating ch.guengel.imageserver.image list: ${allImages.size} ch.guengel.imageserver.image(s)"
         )
     }
-
     companion object {
-        private val logger = LoggerFactory.getLogger(ImageService::class.java)
+        private val logger = Logger.getLogger(ImageService::class.java)
     }
 }
