@@ -1,6 +1,7 @@
 package ch.guengel.imageserver.rest
 
 import ch.guengel.imageserver.image.ImageService
+import io.smallrye.common.annotation.Blocking
 import io.smallrye.mutiny.Uni
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -16,6 +17,7 @@ class Images(@Inject private val imageService: ImageService) {
     @GET
     @Path("/{width}/{height}")
     @Produces("image/jpeg")
+    @Blocking
     fun getImage(width: Int, height: Int): Uni<ByteArray> = Uni
         .createFrom()
         .item(imageService.getRandomImage(width, height))
