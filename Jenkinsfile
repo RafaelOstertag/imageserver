@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'amd64&&linux&&kotlin'
+        label 'amd64&&freebsd&&kotlin'
     }
 
     options {
