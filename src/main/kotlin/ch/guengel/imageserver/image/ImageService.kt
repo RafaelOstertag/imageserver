@@ -66,6 +66,7 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
             "Done updating ch.guengel.imageserver.image list: ${allImages.size} ch.guengel.imageserver.image(s)"
         )
     }
+
     companion object {
         private val logger = Logger.getLogger(ImageService::class.java)
     }
