@@ -27,7 +27,7 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
 
     fun getRandomImage(width: Int, height: Int): Image {
         val image = allImages.random(rng)
-        logger.info("Serving ch.guengel.imageserver.image $image")
+        logger.info("Serving image $image")
         val originalImage = Image(image)
         return originalImage.resizeToMatch(width, height)
     }
@@ -55,7 +55,7 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
     fun getExclusionPattern(): String = excludeRegexRef.get().pattern
 
     suspend fun readAll() {
-        logger.info("Start updating ch.guengel.imageserver.image list")
+        logger.info("Start image list")
         val imageLister = ImageLister(root, excludeRegexRef.get())
         allImages.clear()
         for (path in imageLister.getImages()) {
@@ -63,7 +63,7 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
         }
 
         logger.info(
-            "Done updating ch.guengel.imageserver.image list: ${allImages.size} ch.guengel.imageserver.image(s)"
+            "Done updating image list: ${allImages.size} image(s)"
         )
     }
 
