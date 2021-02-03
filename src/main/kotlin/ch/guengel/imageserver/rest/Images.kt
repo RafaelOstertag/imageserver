@@ -3,6 +3,7 @@ package ch.guengel.imageserver.rest
 import ch.guengel.imageserver.image.ImageService
 import io.smallrye.common.annotation.Blocking
 import io.smallrye.mutiny.Uni
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jboss.resteasy.reactive.RestQuery
@@ -31,7 +32,7 @@ class Images(@Inject private val imageService: ImageService) {
         if (update == null) {
             return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST).build())
         }
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.IO) {
             imageService.readAll()
         }
         return Uni.createFrom().item(Response.noContent().build())
@@ -46,7 +47,7 @@ class Images(@Inject private val imageService: ImageService) {
     }
 
     @PUT
-    @Path("/exclusion")
+    @Path("/exclusions")
     @Produces(MediaType.APPLICATION_JSON)
     fun updateExclusions(exclusionPattern: ExclusionPattern): Uni<Response> {
         return Uni.createFrom().item(exclusionPattern)
@@ -57,7 +58,7 @@ class Images(@Inject private val imageService: ImageService) {
     }
 
     @DELETE
-    @Path("/exclusion")
+    @Path("/exclusions")
     @Produces(MediaType.APPLICATION_JSON)
     fun deleteExclusionPattern(): Uni<Response> {
         imageService.resetExclusionPattern()
