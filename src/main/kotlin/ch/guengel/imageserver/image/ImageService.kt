@@ -26,9 +26,9 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
     }
 
     fun getRandomImage(width: Int, height: Int): Image {
-        val image = allImages.random(rng)
-        logger.info("Serving image $image")
-        val originalImage = Image(image)
+        val imagePath = allImages.random(rng)
+        logger.info("Serving image $imagePath")
+        val originalImage = Image(imagePath)
         return originalImage.resizeToMatch(width, height)
     }
 

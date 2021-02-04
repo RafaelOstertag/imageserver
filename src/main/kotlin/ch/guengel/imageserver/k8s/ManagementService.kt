@@ -2,15 +2,21 @@ package ch.guengel.imageserver.k8s
 
 import ch.guengel.imageserver.rest.ExclusionPattern
 import io.fabric8.kubernetes.client.KubernetesClient
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.jboss.logging.Logger
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.ws.rs.client.Client
 import javax.ws.rs.client.ClientBuilder
 import javax.ws.rs.client.Entity
 import javax.ws.rs.core.MediaType
+
+data class Result(val ip: String, val httpStatus: Int, val errorMsg: String?)
 
 @Singleton
 class ManagementService(
@@ -27,51 +33,62 @@ class ManagementService(
             }
     }
 
-    private fun runWithClient(block: (Client, String) -> Unit) {
+    private fun runWithClient(block: (Client, String) -> Result): List<Result> {
         val allPodIPs = getAllPodIPs()
-        val client = ClientBuilder.newClient()
+        val client = ClientBuilder.newBuilder().connectTimeout(15, TimeUnit.SECONDS).build()
         val jobs = allPodIPs.map { ip ->
-            GlobalScope.launch(Dispatchers.IO) {
-                block(client, ip)
+            GlobalScope.async(Dispatchers.IO) {
+                try {
+                    block(client, ip)
+                } catch (ex: RuntimeException) {
+                    Result(ip, -1, ex.message)
+                }
             }
         }
         logger.info("Waiting for all jobs to complete")
-        runBlocking { jobs.joinAll() }
-
+        val results = runBlocking {
+            jobs.map { result -> result.await() }
+        }
         client.close()
         logger.info("Done running jobs")
+        return results
     }
 
     fun reloadAllInstances() =
         runWithClient { client, ip ->
             logger.info("Notifying $ip to reload")
-            client
+            val response = client
                 .target("http://$ip:8080/images?update=")
                 .request()
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE))
-                .close()
+            val result = Result(ip, response.status, null)
+            response.close()
+            result
         }
 
-    fun resetAllExclusions() {
+    fun resetAllExclusions() =
         runWithClient { client, ip ->
             logger.info("Notifying $ip to reset exclusions")
-            client
+            val response = client
                 .target("http://$ip:8080/images/exclusions")
                 .request()
                 .delete()
-                .close()
+            val result = Result(ip, response.status, null)
+            response.close()
+            result
         }
-    }
 
-    fun updateAllExclusions(pattern: String) {
-        val exclusionPattern = ExclusionPattern(pattern)
+    fun updateAllExclusions(pattern: String): List<Result> = pattern.let {
+        val exclusionPattern = ExclusionPattern(it)
         runWithClient { client, ip ->
             logger.info("Set exclusion pattern on $ip")
-            client
+            val response = client
                 .target("http://$ip:8080/images/exclusions")
                 .request()
                 .put(Entity.entity(exclusionPattern, MediaType.APPLICATION_JSON_TYPE))
-                .close()
+            val result = Result(ip, response.status, null)
+            response.close()
+            result
         }
     }
 
