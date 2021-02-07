@@ -27,6 +27,7 @@
         <quarkus.platform.version>1.11.1.Final</quarkus.platform.version>
         <assertk.version>0.23</assertk.version>
         <wiremock-jre8.version>2.26.3</wiremock-jre8.version>
+        <mockk.version>1.10.5</mockk.version>
 
         <!-- Sonar -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -136,6 +137,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+            <version>${mockk.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

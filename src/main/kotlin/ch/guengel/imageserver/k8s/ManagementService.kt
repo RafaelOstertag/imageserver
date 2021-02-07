@@ -9,8 +9,8 @@ import kotlinx.coroutines.runBlocking
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.jboss.logging.Logger
 import java.util.concurrent.TimeUnit
+import javax.enterprise.context.ApplicationScoped
 import javax.inject.Inject
-import javax.inject.Singleton
 import javax.ws.rs.client.Client
 import javax.ws.rs.client.ClientBuilder
 import javax.ws.rs.client.Entity
@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType
 
 data class Result(val ip: String, val httpStatus: Int, val errorMsg: String?)
 
-@Singleton
+@ApplicationScoped
 class ManagementService(
         @ConfigProperty(name = "k8s.podname") private val podname: String,
         @ConfigProperty(name = "k8s.podport") private val podPort: String,

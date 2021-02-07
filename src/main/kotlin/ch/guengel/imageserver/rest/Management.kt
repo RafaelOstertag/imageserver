@@ -24,7 +24,7 @@ class Management(@Inject private val managementService: ManagementService) {
     @Path("/exclusions")
     @Produces(MediaType.APPLICATION_JSON)
     @Blocking
-    fun deleteExclusionPatter(): Multi<Result> = Multi.createFrom().iterable(managementService.resetAllExclusions())
+    fun deleteExclusionPattern(): Multi<Result> = Multi.createFrom().iterable(managementService.resetAllExclusions())
 
     @PUT
     @Path("/exclusions")
