@@ -20,8 +20,9 @@ data class Result(val ip: String, val httpStatus: Int, val errorMsg: String?)
 
 @Singleton
 class ManagementService(
-    @ConfigProperty(name = "k8s.podname") private val podname: String,
-    @Inject private val kubernetesClient: KubernetesClient
+        @ConfigProperty(name = "k8s.podname") private val podname: String,
+        @ConfigProperty(name = "k8s.podport") private val podPort: String,
+        @Inject private val kubernetesClient: KubernetesClient
 ) {
 
     private fun getAllPodIPs(): List<String> {
@@ -58,7 +59,7 @@ class ManagementService(
         runWithClient { client, ip ->
             logger.info("Notifying $ip to reload")
             val response = client
-                .target("http://$ip:8080/images?update=")
+                    .target("http://$ip:$podPort/images?update=")
                 .request()
                 .put(Entity.entity("", MediaType.APPLICATION_JSON_TYPE))
             val result = Result(ip, response.status, null)
@@ -70,7 +71,7 @@ class ManagementService(
         runWithClient { client, ip ->
             logger.info("Notifying $ip to reset exclusions")
             val response = client
-                .target("http://$ip:8080/images/exclusions")
+                    .target("http://$ip:$podPort/images/exclusions")
                 .request()
                 .delete()
             val result = Result(ip, response.status, null)
@@ -83,7 +84,7 @@ class ManagementService(
         runWithClient { client, ip ->
             logger.info("Set exclusion pattern on $ip")
             val response = client
-                .target("http://$ip:8080/images/exclusions")
+                    .target("http://$ip:$podPort/images/exclusions")
                 .request()
                 .put(Entity.entity(exclusionPattern, MediaType.APPLICATION_JSON_TYPE))
             val result = Result(ip, response.status, null)

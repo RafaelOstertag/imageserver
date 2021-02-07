@@ -26,6 +26,7 @@
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
         <quarkus.platform.version>1.11.1.Final</quarkus.platform.version>
         <assertk.version>0.23</assertk.version>
+        <wiremock-jre8.version>2.26.3</wiremock-jre8.version>
 
         <!-- Sonar -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -112,6 +113,19 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client-jackson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-test-kubernetes-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8</artifactId>
+            <version>${wiremock-jre8.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
