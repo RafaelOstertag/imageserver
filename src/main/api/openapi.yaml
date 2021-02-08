@@ -24,6 +24,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/jpeg-image'
+        '400':
+          $ref: '#/components/responses/error'
       operationId: getImage
       description: Return a random image.
       tags:
@@ -158,7 +160,8 @@ components:
         type: integer
         format: int32
         example: 1024
-      description: width of image returned
+        minimum: 100
+      description: width in pixels of returned image
     height:
       name: height
       in: path
@@ -167,16 +170,23 @@ components:
         type: integer
         format: int32
         example: 768
+        minimum: 100
       description: height in pixels of returned image
   responses:
     jpeg-image:
-      description: Example response
+      description: JPEG Image
       content:
         image/jpeg:
           schema:
             type: string
             format: binary
             readOnly: true
+    error:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
     Result:
       type: object
@@ -232,7 +242,7 @@ components:
             errorMsg: Unable to connect
       description: List of results
     ExclusionPattern:
-      title: ExclusionPattern
+      title: Exclusion Pattern
       type: object
       description: Exclusion regular expressions to exclude images from being returned.
       properties:
@@ -241,3 +251,13 @@ components:
           description: Regular expression.
       required:
         - pattern
+    ErrorResponse:
+      title: Error Response
+      type: object
+      description: Returned upon error
+      properties:
+        message:
+          type: string
+          description: Error message
+      required:
+        - message

@@ -11,6 +11,7 @@ import io.restassured.RestAssured.given
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.util.regex.PatternSyntaxException
 import javax.inject.Inject
 import javax.ws.rs.core.MediaType
 
@@ -29,6 +30,20 @@ internal class ImagesTest {
         given().`when`().get("/images/720/820").then().statusCode(200)
 
         verify { imageService.getRandomImage(720, 820) }
+    }
+
+    @Test
+    fun `invalid width`() {
+        given().`when`().get("/images/99/820").then().statusCode(400)
+
+        verify(exactly = 0) { imageService.getRandomImage(any(), any()) }
+    }
+
+    @Test
+    fun `invalid height`() {
+        given().`when`().get("/images/820/99").then().statusCode(400)
+
+        verify(exactly = 0) { imageService.getRandomImage(any(), any()) }
     }
 
     @Test
@@ -52,16 +67,30 @@ internal class ImagesTest {
     fun updateExclusions() {
         every { imageService.setExclusionPattern(any()) } just Runs
         given().contentType(MediaType.APPLICATION_JSON).body("""{ "pattern": "exclusion" }""")
-                .`when`().put("/images/exclusions")
-                .then().statusCode(204)
-        verify { imageService.setExclusionPattern("exclusion") }
+            .`when`().put("/images/exclusions")
+            .then().statusCode(204)
+    }
+
+    @Test
+    fun `validate size of exclusion pattern`() {
+        given().contentType(MediaType.APPLICATION_JSON).body("""{ "pattern": "e" }""")
+            .`when`().put("/images/exclusions")
+            .then().statusCode(400)
+    }
+
+    @Test
+    fun `handle invalid pattern`() {
+        every { imageService.setExclusionPattern(any()) } throws PatternSyntaxException("test", "test", 0)
+        given().contentType(MediaType.APPLICATION_JSON).body("""{ "pattern": "[" }""")
+            .`when`().put("/images/exclusions")
+            .then().statusCode(400)
     }
 
     @Test
     fun deleteExclusionPattern() {
         every { imageService.resetExclusionPattern() } just Runs
         given().`when`().delete("/images/exclusions")
-                .then().statusCode(204)
+            .then().statusCode(204)
         verify { imageService.resetExclusionPattern() }
     }
 
