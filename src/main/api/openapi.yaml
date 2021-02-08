@@ -1,0 +1,263 @@
+openapi: 3.0.1
+info:
+  title: Image Server
+  description: 'Image Server inspired by https://picsum.photos/.'
+  version: '1.0'
+  contact:
+    name: Rafael Ostertag
+    email: rafi@guengel.ch
+  license:
+    name: BSD-2 Clause
+    url: 'https://opensource.org/licenses/BSD-2-Clause'
+servers:
+  - url: 'http://imageserver.app.k8s.kruemel.home'
+    description: Production
+  - url: 'http://localhost:8080'
+    description: Local development
+paths:
+  '/images/{width}/{height}':
+    parameters:
+      - $ref: '#/components/parameters/width'
+      - $ref: '#/components/parameters/height'
+    get:
+      summary: Get random image
+      responses:
+        '200':
+          $ref: '#/components/responses/jpeg-image'
+        '400':
+          $ref: '#/components/responses/error'
+      operationId: getImage
+      description: Return a random image.
+      tags:
+        - images
+  /images/exclusions:
+    get:
+      summary: Get image exclusion pattern
+      tags:
+        - exclusions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExclusionPattern'
+      operationId: getImageExclusions
+      description: Get the current image exclusion.
+    put:
+      summary: Update image exclusion pattern
+      operationId: setExclusionPattern
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+      description: Set new exclusion pattern. Image paths that match this expression will not be returned.
+      tags:
+        - exclusions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExclusionPattern'
+            examples:
+              Image exclusion pattern:
+                value:
+                  pattern: .*/nature/.*
+        description: Set image exclusion pattern
+    delete:
+      summary: Reset exclusion pattern
+      operationId: resetExclusionPattern
+      responses:
+        '204':
+          description: No Content
+      description: Reset the image exclusion pattern.
+      tags:
+        - exclusions
+  /management/reload:
+    put:
+      summary: Re-read images on all instances
+      operationId: reloadAll
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Results'
+      description: Notify all instances in kubernetes namespace to reload images
+      tags:
+        - kubernetes
+        - management
+  /images:
+    put:
+      summary: Re-read images
+      operationId: rereadImages
+      responses:
+        '204':
+          description: No Content
+      description: Re-read all images in all directories.
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: update
+          required: true
+          allowEmptyValue: true
+          description: 'Value is irrelevant, only presence is required'
+      tags:
+        - images
+  /management/exclusions:
+    put:
+      summary: Set image exclusion pattern
+      operationId: updateExclusions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Results'
+      description: Set the image exclusion pattern on all instances in Kubernetes namespace.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExclusionPattern'
+      tags:
+        - kubernetes
+        - management
+    delete:
+      summary: Reset image exclusion pattern
+      operationId: deleteExclusionPattern
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Results'
+      tags:
+        - kubernetes
+        - management
+      description: Reset image exclusion pattern on all instances in Kubernetes namespace.
+tags:
+  - name: images
+    description: Image operations
+  - name: exclusions
+    description: Image exclusions
+  - name: kubernetes
+    description: Operations for Kubernetes
+  - name: management
+    description: Manage multiple instances
+components:
+  parameters:
+    width:
+      name: width
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 1024
+        minimum: 100
+      description: width in pixels of returned image
+    height:
+      name: height
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 768
+        minimum: 100
+      description: height in pixels of returned image
+  responses:
+    jpeg-image:
+      description: JPEG Image
+      content:
+        image/jpeg:
+          schema:
+            type: string
+            format: binary
+            readOnly: true
+    error:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    Result:
+      type: object
+      title: Result
+      description: Result of management operation
+      x-examples:
+        No error:
+          ip: 192.168.100.1
+          httpStatus: 201
+          errorMsg: null
+        With error:
+          ip: 192.168.100.1
+          httpStatus: -1
+          errorMsg: Unable to connect
+      properties:
+        ip:
+          type: string
+          example: 192.168.100.1
+          format: ipv4
+          description: IP address of container
+          readOnly: true
+        httpStatus:
+          type: integer
+          example: 201
+          description: 'HTTP status code of call, or `-1` on error'
+          readOnly: true
+        errorMsg:
+          type: string
+          description: Error message. `null` if no error message is present. Only set if `httpStatus` is `-1`.
+          example: Unable to connect
+          readOnly: true
+      required:
+        - ip
+        - httpStatus
+        - errorMsg
+      readOnly: true
+    Results:
+      type: array
+      title: Results
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/Result'
+      x-examples:
+        List results:
+          - ip: 192.168.100.1
+            httpStatus: 201
+            errorMsg: null
+          - ip: 192.168.100.2
+            httpStatus: 400
+            errorMsg: null
+          - ip: 192.168.100.3
+            httpStatus: -1
+            errorMsg: Unable to connect
+      description: List of results
+    ExclusionPattern:
+      title: Exclusion Pattern
+      type: object
+      description: Exclusion regular expressions to exclude images from being returned.
+      properties:
+        pattern:
+          type: string
+          description: Regular expression.
+      required:
+        - pattern
+    ErrorResponse:
+      title: Error Response
+      type: object
+      description: Returned upon error
+      properties:
+        message:
+          type: string
+          description: Error message
+      required:
+        - message

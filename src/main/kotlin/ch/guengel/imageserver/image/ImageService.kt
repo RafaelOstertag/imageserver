@@ -8,12 +8,12 @@ import org.jboss.logging.Logger
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.atomic.AtomicReference
-import javax.inject.Singleton
+import javax.enterprise.context.ApplicationScoped
 import kotlin.random.Random
 
 private const val defaultExclusionPattern = "^$"
 
-@Singleton
+@ApplicationScoped
 class ImageService(@ConfigProperty(name = "images.directory") private val root: Path) {
     private var allImages = ConcurrentSkipListSet<Path>()
     private val rng = Random(System.currentTimeMillis())

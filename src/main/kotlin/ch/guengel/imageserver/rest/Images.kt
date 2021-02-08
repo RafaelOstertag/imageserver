@@ -8,6 +8,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jboss.resteasy.reactive.RestQuery
 import javax.inject.Inject
+import javax.validation.Valid
+import javax.validation.constraints.Min
+import javax.validation.constraints.Size
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
@@ -19,7 +22,7 @@ class Images(@Inject private val imageService: ImageService) {
     @Path("/{width}/{height}")
     @Produces("image/jpeg")
     @Blocking
-    fun getImage(width: Int, height: Int): Uni<ByteArray> = Uni
+    fun getImage(@Valid @Min(100) width: Int, @Valid @Min(100) height: Int): Uni<ByteArray> = Uni
         .createFrom()
         .item(imageService.getRandomImage(width, height))
         .onItem()
@@ -49,11 +52,10 @@ class Images(@Inject private val imageService: ImageService) {
     @PUT
     @Path("/exclusions")
     @Produces(MediaType.APPLICATION_JSON)
-    fun updateExclusions(exclusionPattern: ExclusionPattern): Uni<Response> {
+    fun updateExclusions(@Valid exclusionPattern: ExclusionPattern): Uni<Response> {
         return Uni.createFrom().item(exclusionPattern)
             .onItem().transform { imageService.setExclusionPattern(exclusionPattern.pattern) }
             .onItem().transform { Response.noContent() }
-            .onFailure().recoverWithItem(Response.status(Response.Status.BAD_REQUEST))
             .onItem().transform { it -> it.build() }
     }
 
@@ -66,4 +68,4 @@ class Images(@Inject private val imageService: ImageService) {
     }
 }
 
-data class ExclusionPattern(val pattern: String)
+data class ExclusionPattern(@field:Size(min = 2) val pattern: String)
