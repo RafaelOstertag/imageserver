@@ -58,7 +58,7 @@ pipeline {
                 configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
                     sh 'mvn -B -s "$MAVEN_SETTINGS_XML" -Psecurity-scan dependency-check:check'
                 }
-                dependencyCheckPublisher failedTotalCritical: 1, failedTotalHigh: 5, failedTotalLow: 8, failedTotalMedium: 8, pattern: 'target/dependency-check-report.xml', unstableTotalCritical: 0, unstableTotalHigh: 4, unstableTotalLow: 8, unstableTotalMedium: 8
+                dependencyCheckPublisher failedTotalCritical: 1, failedTotalHigh: 4, failedTotalLow: 8, failedTotalMedium: 8, pattern: 'target/dependency-check-report.xml', unstableTotalCritical: 0, unstableTotalHigh: 2, unstableTotalLow: 8, unstableTotalMedium: 8
             }
         }
 
