@@ -107,11 +107,6 @@
 
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-logging-gelf</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-kubernetes-client</artifactId>
         </dependency>
 
