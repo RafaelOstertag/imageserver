@@ -87,4 +87,7 @@
     <suppress>
         <cve>CVE-2020-8554</cve>
     </suppress>
+    <suppress>
+        <cve>CVE-2019-11243</cve>
+    </suppress>
 </suppressions>
