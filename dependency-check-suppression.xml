@@ -13,13 +13,7 @@
         <cve>CVE-2016-9606</cve>
     </suppress>
     <suppress>
-        <cve>CVE-2018-15529</cve>
-    </suppress>
-    <suppress>
-        <cve>CVE-2020-15824</cve>
-    </suppress>
-    <suppress>
-        <cve>CVE-2020-25633</cve>
+        <cve>CVE-2017-18640</cve>
     </suppress>
     <suppress>
         <cve>CVE-2018-1002101</cve>
@@ -31,10 +25,16 @@
         <cve>CVE-2018-1002105</cve>
     </suppress>
     <suppress>
+        <cve>CVE-2018-15529</cve>
+    </suppress>
+    <suppress>
         <cve>CVE-2019-1002100</cve>
     </suppress>
     <suppress>
         <cve>CVE-2019-1002101</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2019-11243</cve>
     </suppress>
     <suppress>
         <cve>CVE-2019-11244</cve>
@@ -64,10 +64,46 @@
         <cve>CVE-2019-11254</cve>
     </suppress>
     <suppress>
+        <cve>CVE-2019-14900</cve>
+    </suppress>
+    <suppress>
         <cve>CVE-2019-9946</cve>
     </suppress>
     <suppress>
+        <cve>CVE-2020-10693</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-13692</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-13956</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-15824</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-1714</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-1728</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-25633</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-25638</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-25649</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-29582</cve>
+    </suppress>
+    <suppress>
         <cve>CVE-2020-8552</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-8554</cve>
     </suppress>
     <suppress>
         <cve>CVE-2020-8555</cve>
@@ -85,9 +121,9 @@
         <cve>CVE-2020-8563</cve>
     </suppress>
     <suppress>
-        <cve>CVE-2020-8554</cve>
+        <cve>CVE-2020-8908</cve>
     </suppress>
     <suppress>
-        <cve>CVE-2019-11243</cve>
+        <cve>CVE-2021-21290</cve>
     </suppress>
 </suppressions>
