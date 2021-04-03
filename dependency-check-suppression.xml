@@ -126,4 +126,13 @@
     <suppress>
         <cve>CVE-2021-21290</cve>
     </suppress>
+    <suppress>
+        <cve>CVE-2021-21295</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2019-11251</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2021-20289</cve>
+    </suppress>
 </suppressions>
