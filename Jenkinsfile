@@ -94,7 +94,7 @@ pipeline {
                 configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
                     sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
                 }
-                sh "docker build -t rafaelostertag/imageserver:latest -f src/main/docker/Dockerfile.fast-jar ."
+                sh "docker build -t rafaelostertag/imageserver:latest -f src/main/docker/Dockerfile.jvm ."
                 withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                     sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
                     sh "docker push rafaelostertag/imageserver:latest"
