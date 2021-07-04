@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
+        <cpe>cpe:/a:eclipse:eclipse_ide</cpe>
+    </suppress>
+    <suppress>
+        <cpe>cpe:/a:storage_project:storage</cpe>
+    </suppress>
+    <suppress>
         <cve>CVE-2011-5245</cve>
     </suppress>
     <suppress>
@@ -134,5 +140,17 @@
     </suppress>
     <suppress>
         <cve>CVE-2021-20289</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-10688</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2020-25724</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2021-20293</cve>
+    </suppress>
+    <suppress>
+        <cve>CVE-2018-1000413</cve>
     </suppress>
 </suppressions>
