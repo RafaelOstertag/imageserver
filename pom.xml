@@ -15,19 +15,19 @@
 
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.6</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
         <dependency-check-maven.version>6.2.2</dependency-check-maven.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
 
-        <kotlin.version>1.4.32</kotlin.version>
-        <kotlinx-coroutines-core.version>1.4.2</kotlinx-coroutines-core.version>
+        <kotlin.version>1.6.10</kotlin.version>
+        <kotlinx-coroutines-core.version>1.6.0</kotlinx-coroutines-core.version>
 
         <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-        <quarkus.platform.version>2.0.0.Final</quarkus.platform.version>
-        <assertk.version>0.23.1</assertk.version>
-        <wiremock-jre8.version>2.27.2</wiremock-jre8.version>
-        <mockk.version>1.11.0</mockk.version>
+        <quarkus.platform.version>2.6.1.Final</quarkus.platform.version>
+        <assertk.version>0.25</assertk.version>
+        <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
+        <mockk.version>1.12.2</mockk.version>
 
         <!-- Sonar -->
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
