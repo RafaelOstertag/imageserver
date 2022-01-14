@@ -80,9 +80,6 @@ pipeline {
         }
 
         stage('Build & Push Development Docker Image') {
-            agent {
-                label "arm64&&docker&&kotlin"
-            }
             when {
                 branch 'develop'
                 not {
@@ -90,19 +87,125 @@ pipeline {
                 }
             }
 
-            steps {
-                configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
-                    sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
+            parallel {
+                stage("ARM64") {
+                    agent {
+                        label "arm64&&docker&&kotlin"
+                    }
+
+                    steps {
+                        configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
+                        }
+                        sh "docker build -t rafaelostertag/imageserver:latest-arm64 -f src/main/docker/Dockerfile.jvm ."
+                        withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                            sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
+                            sh "docker push rafaelostertag/imageserver:latest-arm64"
+                        }
+                    }
                 }
-                sh "docker build -t rafaelostertag/imageserver:latest -f src/main/docker/Dockerfile.jvm ."
+
+                stage("AMD64") {
+                    agent {
+                        label "amd64&&docker&&kotlin"
+                    }
+
+                    steps {
+                        configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
+                        }
+                        sh "docker build -t rafaelostertag/imageserver:latest-amd64 -f src/main/docker/Dockerfile.jvm ."
+                        withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                            sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
+                            sh "docker push rafaelostertag/imageserver:latest-amd64"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Development Multi Arch Docker Manifest') {
+            when {
+                branch 'develop'
+                not {
+                    triggeredBy "TimerTrigger"
+                }
+            }
+
+            agent {
+                label "arm64&&docker&&kotlin"
+            }
+
+            steps {
                 withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                     sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
-                    sh "docker push rafaelostertag/imageserver:latest"
+                    sh 'docker manifest create "rafaelostertag/imageserver:latest" --amend "rafaelostertag/imageserver:latest-amd64" --amend "rafaelostertag/imageserver:latest-arm64"'
+                    sh "docker manifest push --purge rafaelostertag/imageserver:latest"
                 }
             }
         }
 
         stage('Build & Push Release Docker Image') {
+            when {
+                branch 'master'
+                not {
+                    triggeredBy "TimerTrigger"
+                }
+            }
+
+            parallel {
+                stage("ARM64") {
+                    agent {
+                        label "arm64&&docker&&kotlin"
+                    }
+
+                    environment {
+                        VERSION = sh returnStdout: true, script: "mvn -B help:evaluate '-Dexpression=project.version' | grep -v '\\[' | tr -d '\\n'"
+                    }
+
+                    steps {
+                        configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
+                        }
+                        sh 'docker build -t rafaelostertag/imageserver:${VERSION}-arm64 -f src/main/docker/Dockerfile.jvm .'
+                        withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                            sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
+                            sh 'docker push rafaelostertag/imageserver:${VERSION}-arm64'
+                        }
+                    }
+                }
+
+                stage("AMD64") {
+                    agent {
+                        label "amd64&&docker&&kotlin"
+                    }
+
+                    environment {
+                        VERSION = sh returnStdout: true, script: "mvn -B help:evaluate '-Dexpression=project.version' | grep -v '\\[' | tr -d '\\n'"
+                    }
+
+                    steps {
+                        configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
+                        }
+                        sh 'docker build -t rafaelostertag/imageserver:${VERSION}-amd64 -f src/main/docker/Dockerfile.jvm .'
+                        withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                            sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
+                            sh 'docker push rafaelostertag/imageserver:${VERSION}-amd64'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Production Multi Arch Docker Manifest') {
+            when {
+                branch 'master'
+                not {
+                    triggeredBy "TimerTrigger"
+                }
+            }
+
             agent {
                 label "arm64&&docker&&kotlin"
             }
@@ -111,21 +214,11 @@ pipeline {
                 VERSION = sh returnStdout: true, script: "mvn -B help:evaluate '-Dexpression=project.version' | grep -v '\\[' | tr -d '\\n'"
             }
 
-            when {
-                branch 'master'
-                not {
-                    triggeredBy "TimerTrigger"
-                }
-            }
-
             steps {
-                configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
-                    sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
-                }
-                sh "docker build -t rafaelostertag/imageserver:${env.VERSION} -f src/main/docker/Dockerfile.jvm ."
                 withCredentials([usernamePassword(credentialsId: '750504ce-6f4f-4252-9b2b-5814bd561430', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                     sh 'docker login --username "$USERNAME" --password "$PASSWORD"'
-                    sh "docker push rafaelostertag/imageserver:${env.VERSION}"
+                    sh 'docker manifest create "rafaelostertag/imageserver:${VERSION}" --amend "rafaelostertag/imageserver:${VERSION}-amd64" --amend "rafaelostertag/imageserver:${VERSION}-arm64"'
+                    sh 'docker manifest push --purge rafaelostertag/imageserver:${VERSION}'
                 }
             }
         }
