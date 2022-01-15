@@ -133,7 +133,7 @@ pipeline {
             }
 
             agent {
-                label "arm64&&docker&&kotlin"
+                label "docker"
             }
 
             steps {
@@ -207,7 +207,7 @@ pipeline {
             }
 
             agent {
-                label "arm64&&docker&&kotlin"
+                label "docker&&kotlin"
             }
 
             environment {
