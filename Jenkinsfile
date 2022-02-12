@@ -27,7 +27,7 @@ pipeline {
                 }
             }
 
-             post {
+            post {
                 always {
                     junit '**/failsafe-reports/*.xml,**/surefire-reports/*.xml'
                     jacoco()
@@ -36,6 +36,12 @@ pipeline {
         }
 
         stage("Sonarcloud") {
+            when {
+                not {
+                    triggeredBy 'TimerTrigger'
+                }
+            }
+
             steps {
                 configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
                     withSonarQubeEnv(installationName: 'Sonarcloud', credentialsId: 'e8795d01-550a-4c05-a4be-41b48b22403f') {
@@ -46,6 +52,12 @@ pipeline {
         }
 
         stage("Quality Gate") {
+            when {
+                not {
+                    triggeredBy 'TimerTrigger'
+                }
+            }
+
             steps {
                 timeout(time: 30, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
@@ -133,7 +145,7 @@ pipeline {
             }
 
             agent {
-                label "arm64&&docker&&kotlin"
+                label "docker"
             }
 
             steps {
@@ -207,7 +219,7 @@ pipeline {
             }
 
             agent {
-                label "arm64&&docker&&kotlin"
+                label "docker&&kotlin"
             }
 
             environment {

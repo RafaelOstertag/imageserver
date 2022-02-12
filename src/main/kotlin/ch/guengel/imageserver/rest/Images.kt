@@ -3,11 +3,12 @@ package ch.guengel.imageserver.rest
 import ch.guengel.imageserver.image.ImageService
 import io.smallrye.common.annotation.Blocking
 import io.smallrye.mutiny.Uni
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.jboss.resteasy.reactive.RestQuery
-import javax.inject.Inject
+import javax.annotation.PreDestroy
 import javax.validation.Valid
 import javax.validation.constraints.Min
 import javax.validation.constraints.Size
@@ -16,7 +17,13 @@ import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
 @Path("/images")
-class Images(@Inject private val imageService: ImageService) {
+class Images(private val imageService: ImageService) {
+    private val scope = CoroutineScope(Dispatchers.IO)
+
+    @PreDestroy
+    internal fun preDestroy() {
+        scope.cancel()
+    }
 
     @GET
     @Path("/{width}/{height}")
@@ -35,7 +42,7 @@ class Images(@Inject private val imageService: ImageService) {
         if (update == null) {
             return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST).build())
         }
-        GlobalScope.launch(Dispatchers.IO) {
+        scope.launch {
             imageService.readAll()
         }
         return Uni.createFrom().item(Response.noContent().build())

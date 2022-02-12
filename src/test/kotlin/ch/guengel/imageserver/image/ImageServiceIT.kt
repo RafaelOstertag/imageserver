@@ -2,13 +2,15 @@ package ch.guengel.imageserver.image
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import io.quarkus.test.junit.QuarkusTest
 import org.junit.After
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
+import javax.inject.Inject
 
-internal class ImageServiceTest {
-    private val imageService =
-            ImageService(Path.of("src/test/resources/images"))
+@QuarkusTest
+internal class ImageServiceIT {
+    @Inject
+    internal lateinit var imageService: ImageService
 
     @After
     fun after() {
