@@ -10,7 +10,7 @@ info:
     name: BSD-2 Clause
     url: 'https://opensource.org/licenses/BSD-2-Clause'
 servers:
-  - url: 'http://imageserver.app.k8s.kruemel.home'
+  - url: 'https://imageserver.app.k8s.kruemel.home'
     description: Production
   - url: 'http://localhost:8080'
     description: Local development
@@ -74,7 +74,7 @@ paths:
       description: Reset the image exclusion pattern.
       tags:
         - exclusions
-  /management/reload:
+  /management/images/reload:
     put:
       summary: Re-read images on all instances
       operationId: reloadAll
