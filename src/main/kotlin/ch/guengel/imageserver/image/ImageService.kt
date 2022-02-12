@@ -1,13 +1,16 @@
 package ch.guengel.imageserver.image
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.jboss.logging.Logger
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.atomic.AtomicReference
+import javax.annotation.PostConstruct
+import javax.annotation.PreDestroy
 import javax.enterprise.context.ApplicationScoped
 import kotlin.random.Random
 
@@ -15,14 +18,21 @@ private const val defaultExclusionPattern = "^$"
 
 @ApplicationScoped
 class ImageService(@ConfigProperty(name = "images.directory") private val root: Path) {
+    private val scope = CoroutineScope(Dispatchers.IO)
     private var allImages = ConcurrentSkipListSet<Path>()
     private val rng = Random(System.currentTimeMillis())
     private var excludeRegexRef = AtomicReference<Regex>(Regex(defaultExclusionPattern))
 
-    init {
-        runBlocking {
+    @PostConstruct
+    internal fun postConstruct() {
+        scope.launch {
             readAll()
         }
+    }
+
+    @PreDestroy
+    internal fun preDestroy() {
+        scope.cancel()
     }
 
     fun getRandomImage(width: Int, height: Int): Image {
@@ -36,7 +46,7 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
         val newRegex = Regex(pattern)
         val oldRegex = excludeRegexRef.getAndSet(newRegex)
         if (newRegex.toString() != oldRegex.toString()) {
-            GlobalScope.launch {
+            scope.launch {
                 readAll()
             }
         }
@@ -46,7 +56,7 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
         val newRegex = Regex(defaultExclusionPattern)
         val oldRegex = excludeRegexRef.getAndSet(newRegex)
         if (oldRegex.toString() != newRegex.toString()) {
-            GlobalScope.launch {
+            scope.launch {
                 readAll()
             }
         }
@@ -56,15 +66,16 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
 
     suspend fun readAll() {
         logger.info("Start image list")
-        val imageLister = ImageLister(root, excludeRegexRef.get())
-        allImages.clear()
-        for (path in imageLister.getImages()) {
-            allImages.add(path)
-        }
+        ImageLister(root, excludeRegexRef.get()).use { imageLister ->
+            allImages.clear()
+            for (path in imageLister.getImages()) {
+                allImages.add(path)
+            }
 
-        logger.info(
-            "Done updating image list: ${allImages.size} image(s)"
-        )
+            logger.info(
+                "Done updating image list: ${allImages.size} image(s)"
+            )
+        }
     }
 
     companion object {

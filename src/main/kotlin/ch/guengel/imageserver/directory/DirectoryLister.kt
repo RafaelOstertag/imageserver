@@ -13,11 +13,11 @@ class DirectoryLister(
     private val directory: Path,
     private val includePattern: Regex,
     private val excludePattern: Regex
-) {
-
+) : AutoCloseable {
+    private val scope = CoroutineScope(Dispatchers.IO)
     fun getFiles(): Channel<Path> {
         val channel = Channel<Path>()
-        GlobalScope.launch(Dispatchers.IO) {
+        scope.launch {
             Files.walkFileTree(directory, FileVisitor(channel, includePattern, excludePattern))
             channel.close()
         }
@@ -52,5 +52,9 @@ class DirectoryLister(
 
     companion object {
         private val logger = LoggerFactory.getLogger(DirectoryLister::class.java)
+    }
+
+    override fun close() {
+        scope.cancel()
     }
 }

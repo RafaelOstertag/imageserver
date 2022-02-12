@@ -9,51 +9,52 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.fabric8.kubernetes.api.model.PodBuilder
 import io.fabric8.kubernetes.api.model.PodListBuilder
-import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer
-import io.quarkus.test.common.QuarkusTestResource
+import io.fabric8.kubernetes.client.server.mock.KubernetesServer
 import io.quarkus.test.junit.QuarkusTest
-import io.quarkus.test.kubernetes.client.KubernetesMockServerTestResource
-import io.quarkus.test.kubernetes.client.MockServer
+import io.quarkus.test.kubernetes.client.KubernetesTestServer
+import io.quarkus.test.kubernetes.client.WithKubernetesTestServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
-@QuarkusTestResource(KubernetesMockServerTestResource::class)
+@WithKubernetesTestServer
 @QuarkusTest
-internal class ManagementServiceTest {
+internal class ManagementServiceIT {
     @Inject
     private lateinit var managementService: ManagementService
 
-    @MockServer
-    private lateinit var kubernetesMockServer: KubernetesMockServer
+    @KubernetesTestServer
+    private lateinit var kubernetesMockServer: KubernetesServer
 
     private var wireMockServer: WireMockServer? = null
 
     @BeforeEach
     fun before() {
         val pod1 = PodBuilder().withNewMetadata()
-                .withName("imageserver-1")
-                .withNamespace("test")
-                .endMetadata()
-                .withNewStatus()
-                .withNewPodIP("127.0.0.1")
-                .endStatus()
-                .build()
+            .withName("imageserver-1")
+            .withNamespace("test")
+            .endMetadata()
+            .withNewStatus()
+            .withPodIP("127.0.0.1")
+            .endStatus()
+            .build()
         val pod2 = PodBuilder().withNewMetadata()
-                .withName("imageserver-2")
-                .withNamespace("test")
-                .endMetadata()
-                .withNewStatus()
-                .withNewPodIP("127.0.0.1")
-                .endStatus()
-                .build()
+            .withName("imageserver-2")
+            .withNamespace("test")
+            .endMetadata()
+            .withNewStatus()
+            .withPodIP("127.0.0.1")
+            .endStatus()
+            .build()
 
         kubernetesMockServer.expect().get().withPath("/api/v1/namespaces/test/pods")
-                .andReturn(200,
-                        PodListBuilder().withNewMetadata().withResourceVersion("1").endMetadata().withItems(pod1, pod2)
-                                .build())
-                .always()
+            .andReturn(
+                200,
+                PodListBuilder().withNewMetadata().withResourceVersion("1").endMetadata().withItems(pod1, pod2)
+                    .build()
+            )
+            .always()
     }
 
     @AfterEach
@@ -106,9 +107,11 @@ internal class ManagementServiceTest {
             assertThat(it.httpStatus).isEqualTo(204)
         }
 
-        wireMockServer?.verify(2, putRequestedFor(urlEqualTo("/images/exclusions")).withRequestBody(
+        wireMockServer?.verify(
+            2, putRequestedFor(urlEqualTo("/images/exclusions")).withRequestBody(
                 matchingJsonPath("$.pattern", equalTo("test"))
-        ))
+            )
+        )
     }
 
     @Test

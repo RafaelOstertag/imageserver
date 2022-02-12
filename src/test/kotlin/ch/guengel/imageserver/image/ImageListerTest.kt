@@ -11,35 +11,37 @@ import java.nio.file.Path
 internal class ImageListerTest {
     @Test
     fun randomImage() {
-        val imageLister = ImageLister(Path.of("src/test/resources/images"), Regex("^$"))
-        val images = runBlocking {
-            val fileList = mutableListOf<Path>()
-            for (image in imageLister.getImages()) {
-                fileList.add(image)
+        ImageLister(Path.of("src/test/resources/images"), Regex("^$")).use { imageLister ->
+            val images = runBlocking {
+                val fileList = mutableListOf<Path>()
+                for (image in imageLister.getImages()) {
+                    fileList.add(image)
+                }
+                fileList
             }
-            fileList
+
+            assertThat(images).hasSize(3)
+
+            assertThat(images.find { image -> image.fileName.toString() == "large.jpeg" }).isNotNull()
+            assertThat(images.find { image -> image.fileName.toString() == "medium.jpg" }).isNotNull()
+            assertThat(images.find { image -> image.fileName.toString() == "small.png" }).isNotNull()
         }
-
-        assertThat(images).hasSize(3)
-
-        assertThat(images.find { image -> image.fileName.toString() == "large.jpeg" }).isNotNull()
-        assertThat(images.find { image -> image.fileName.toString() == "medium.jpg" }).isNotNull()
-        assertThat(images.find { image -> image.fileName.toString() == "small.png" }).isNotNull()
     }
 
     @Test
     fun exclusion() {
-        val imageLister = ImageLister(Path.of("src/test/resources/images"), Regex(".*\\.jpeg$"))
-        val images = runBlocking {
-            val fileList = mutableListOf<Path>()
-            for (image in imageLister.getImages()) {
-                fileList.add(image)
+        ImageLister(Path.of("src/test/resources/images"), Regex(".*\\.jpeg$")).use { imageLister ->
+            val images = runBlocking {
+                val fileList = mutableListOf<Path>()
+                for (image in imageLister.getImages()) {
+                    fileList.add(image)
+                }
+                fileList
             }
-            fileList
-        }
 
-        assertThat(images.find { image -> image.fileName.toString() == "large.jpeg" }).isNull()
-        assertThat(images.find { image -> image.fileName.toString() == "medium.jpg" }).isNotNull()
-        assertThat(images.find { image -> image.fileName.toString() == "small.png" }).isNotNull()
+            assertThat(images.find { image -> image.fileName.toString() == "large.jpeg" }).isNull()
+            assertThat(images.find { image -> image.fileName.toString() == "medium.jpg" }).isNotNull()
+            assertThat(images.find { image -> image.fileName.toString() == "small.png" }).isNotNull()
+        }
     }
 }

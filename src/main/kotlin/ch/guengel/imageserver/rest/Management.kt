@@ -4,7 +4,6 @@ import ch.guengel.imageserver.k8s.ManagementService
 import ch.guengel.imageserver.k8s.Result
 import io.smallrye.common.annotation.Blocking
 import io.smallrye.mutiny.Multi
-import javax.inject.Inject
 import javax.ws.rs.DELETE
 import javax.ws.rs.PUT
 import javax.ws.rs.Path
@@ -12,7 +11,7 @@ import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 
 @Path("/management")
-class Management(@Inject private val managementService: ManagementService) {
+class Management(private val managementService: ManagementService) {
 
     @PUT
     @Path("/images/reload")
