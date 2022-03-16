@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'amd64&&freebsd&&kotlin'
+        label 'amd64&&docker&&kotlin'
     }
 
     options {
@@ -118,10 +118,6 @@ pipeline {
                 }
 
                 stage("AMD64") {
-                    agent {
-                        label "amd64&&docker&&kotlin"
-                    }
-
                     steps {
                         configFileProvider([configFile(fileId: '74b276ff-1dec-4519-9033-51e3fd0eac21', variable: 'MAVEN_SETTINGS_XML')]) {
                             sh "mvn -B -s \"$MAVEN_SETTINGS_XML\" clean package -DskipTests -Dquarkus.package.type=fast-jar"
@@ -188,10 +184,6 @@ pipeline {
                 }
 
                 stage("AMD64") {
-                    agent {
-                        label "amd64&&docker&&kotlin"
-                    }
-
                     environment {
                         VERSION = sh returnStdout: true, script: "mvn -B help:evaluate '-Dexpression=project.version' | grep -v '\\[' | tr -d '\\n'"
                     }
