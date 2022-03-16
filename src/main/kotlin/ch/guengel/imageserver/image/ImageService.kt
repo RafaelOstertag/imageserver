@@ -1,9 +1,6 @@
 package ch.guengel.imageserver.image
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.jboss.logging.Logger
 import java.nio.file.Path
@@ -25,7 +22,7 @@ class ImageService(@ConfigProperty(name = "images.directory") private val root: 
 
     @PostConstruct
     internal fun postConstruct() {
-        scope.launch {
+        runBlocking {
             readAll()
         }
     }
