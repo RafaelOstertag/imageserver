@@ -27,7 +27,7 @@ paths:
         '400':
           $ref: '#/components/responses/error'
       operationId: getImage
-      description: Return a random image.
+      description: Return a random image scaled to the specified width and height.
       tags:
         - images
   /images/exclusions:
@@ -74,21 +74,6 @@ paths:
       description: Reset the image exclusion pattern.
       tags:
         - exclusions
-  /management/images/reload:
-    put:
-      summary: Re-read images on all instances
-      operationId: reloadAll
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Results'
-      description: Notify all instances in kubernetes namespace to reload images
-      tags:
-        - kubernetes
-        - management
   /images:
     put:
       summary: Re-read images
@@ -107,6 +92,21 @@ paths:
           description: 'Value is irrelevant, only presence is required'
       tags:
         - images
+  /management/images/reload:
+    put:
+      summary: Re-read images on all instances
+      operationId: reloadAll
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Results'
+      description: Notify all instances in kubernetes namespace to reload images.
+      tags:
+        - kubernetes
+        - management
   /management/exclusions:
     put:
       summary: Set image exclusion pattern

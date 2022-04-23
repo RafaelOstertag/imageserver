@@ -1,0 +1,60 @@
+version: 2.1
+
+orbs:
+  c: rafaelostertag/common-orb@1.12.0
+
+workflows:
+  build-any-branch:
+    jobs:
+      - c/maven-build-and-test:
+          name: build-and-test
+          sonar-project-key: "ch.guengel:imageserver"
+          context:
+            - sonar
+            - repository-read
+      - c/maven-deploy-artifacts:
+          filters:
+            branches:
+              only:
+                - master
+          name: deploy-maven-artifact
+          requires:
+            - build-and-test
+          context:
+            - maven-repository-write
+      - c/maven-quarkus-docker-image:
+          name: docker-image-amd64
+          executor: c/java11-build-amd64
+          dir: "."
+          context:
+            - repository-read
+            - docker-build
+          requires:
+            - deploy-maven-artifact
+      - c/maven-quarkus-docker-image:
+          name: docker-image-arm64
+          executor: c/java11-build-arm64
+          dir: "."
+          context:
+            - repository-read
+            - docker-build
+          requires:
+            - deploy-maven-artifact
+      - c/maven-multi-arch-manifest:
+          name: build-multi-arch-manifest
+          image: "rafaelostertag/imageserver"
+          context:
+            - docker-build
+          requires:
+            - docker-image-arm64
+            - docker-image-amd64
+      - c/maven-trigger-pipeline-with-version:
+          name: trigger-helm-deployment
+          project-name: imageserver-helm
+          filters:
+            branches:
+              only: master
+          context:
+            - circle-ci
+          requires:
+            - build-multi-arch-manifest
