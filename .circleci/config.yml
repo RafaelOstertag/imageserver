@@ -59,3 +59,18 @@ workflows:
             - circle-ci
           requires:
             - build-multi-arch-manifest
+
+  daily-dependency-check:
+    triggers:
+      - schedule:
+          cron: "21 4 * * *"
+          filters:
+            branches:
+              only:
+                - master
+                - develop
+
+    jobs:
+      - c/maven-dependency-check:
+          context:
+            - repository-read
