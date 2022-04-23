@@ -34,6 +34,7 @@ workflows:
       - c/maven-quarkus-docker-image:
           name: docker-image-arm64
           executor: c/java11-build-arm64
+          remote_docker: false
           dir: "."
           context:
             - repository-read
