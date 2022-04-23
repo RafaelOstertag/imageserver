@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  c: rafaelostertag/common-orb@1.12.0
+  c: rafaelostertag/common-orb@1.12.1
 
 workflows:
   build-any-branch:
