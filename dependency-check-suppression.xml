@@ -210,4 +210,165 @@
     <suppress>
         <cve>CVE-2019-10219</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-transport-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-transport@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: okhttp-3.14.9.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-0341</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2019-5736</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2019-13139</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2022-25365</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2019-13509</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2019-16884</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2021-21284</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2018-10892</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-codec-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2021-21285</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: quarkus-container-image-docker-2.9.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.quarkus/quarkus\-container\-image\-docker@.*$</packageUrl>
+        <cve>CVE-2020-27534</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-buffer-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-buffer@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-common-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-common@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-handler-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-handler@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-resolver-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-resolver@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-codec-dns-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-dns@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-codec-http-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-http@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-codec-http2-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-http2@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-codec-socks-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-socks@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-resolver-dns-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-resolver\-dns@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-codec-haproxy-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-codec\-haproxy@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-handler-proxy-4.1.74.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-handler\-proxy@.*$</packageUrl>
+        <cve>CVE-2022-24823</cve>
+    </suppress>
 </suppressions>

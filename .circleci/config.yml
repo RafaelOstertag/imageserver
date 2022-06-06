@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  c: rafaelostertag/common-orb@1.12.2
+  c: rafaelostertag/common-orb@1.19.0
 
 workflows:
   build-any-branch:
@@ -59,3 +59,18 @@ workflows:
             - circle-ci
           requires:
             - build-multi-arch-manifest
+
+  daily-dependency-check:
+    triggers:
+      - schedule:
+          cron: "21 4 * * 4"
+          filters:
+            branches:
+              only:
+                - master
+                - develop
+
+    jobs:
+      - c/maven-dependency-check:
+          context:
+            - repository-read
