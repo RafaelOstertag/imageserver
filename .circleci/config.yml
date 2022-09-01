@@ -1,8 +1,10 @@
 version: 2.1
 
-tag-filter: &tagfilter
+version-tag-only: &version-tag-only
   tags:
     only: /^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}$/
+  branches:
+    ignore: /.*/
 
 
 orbs:
@@ -27,7 +29,7 @@ workflows:
             - sonar
             - repository-read
           filters:
-            *tagfilter
+            *version-tag-only
       - c/maven-deploy-artifacts:
           name: deploy-maven-artifact
           requires:
@@ -35,7 +37,7 @@ workflows:
           context:
             - maven-repository-write
           filters:
-            *tagfilter
+            *version-tag-only
       - c/maven-quarkus-docker-image:
           name: docker-image-amd64
           executor: c/java11-build-amd64
@@ -46,7 +48,7 @@ workflows:
           requires:
             - deploy-maven-artifact
           filters:
-            *tagfilter
+            *version-tag-only
       - c/maven-quarkus-docker-image:
           name: docker-image-arm64
           executor: c/java11-build-arm64
@@ -58,7 +60,7 @@ workflows:
           requires:
             - deploy-maven-artifact
           filters:
-            *tagfilter
+            *version-tag-only
       - c/maven-multi-arch-manifest:
           name: build-multi-arch-manifest
           image: "rafaelostertag/imageserver"
@@ -68,7 +70,7 @@ workflows:
             - docker-image-arm64
             - docker-image-amd64
           filters:
-            *tagfilter
+            *version-tag-only
       - c/maven-trigger-pipeline-with-version:
           name: trigger-helm-deployment
           project-name: imageserver-helm
@@ -77,7 +79,7 @@ workflows:
           requires:
             - build-multi-arch-manifest
           filters:
-            *tagfilter
+            *version-tag-only
   
   daily-dependency-check:
     triggers:
