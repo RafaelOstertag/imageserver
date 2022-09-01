@@ -1,5 +1,10 @@
 version: 2.1
 
+tag-filter: &tagfilter
+  tags:
+    only: /^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}$/
+
+
 orbs:
   c: rafaelostertag/common-orb@1.19.0
 
@@ -12,16 +17,25 @@ workflows:
           context:
             - sonar
             - repository-read
-      - c/maven-deploy-artifacts:
+
+  build-and-release:
+    jobs:
+      - c/maven-build-and-test:
+          name: build-and-test
+          sonar-project-key: "ch.guengel:imageserver"
+          context:
+            - sonar
+            - repository-read
           filters:
-            branches:
-              only:
-                - master
+            *tagfilter
+      - c/maven-deploy-artifacts:
           name: deploy-maven-artifact
           requires:
             - build-and-test
           context:
             - maven-repository-write
+          filters:
+            *tagfilter
       - c/maven-quarkus-docker-image:
           name: docker-image-amd64
           executor: c/java11-build-amd64
@@ -31,6 +45,8 @@ workflows:
             - docker-build
           requires:
             - deploy-maven-artifact
+          filters:
+            *tagfilter
       - c/maven-quarkus-docker-image:
           name: docker-image-arm64
           executor: c/java11-build-arm64
@@ -41,6 +57,8 @@ workflows:
             - docker-build
           requires:
             - deploy-maven-artifact
+          filters:
+            *tagfilter
       - c/maven-multi-arch-manifest:
           name: build-multi-arch-manifest
           image: "rafaelostertag/imageserver"
@@ -49,17 +67,18 @@ workflows:
           requires:
             - docker-image-arm64
             - docker-image-amd64
+          filters:
+            *tagfilter
       - c/maven-trigger-pipeline-with-version:
           name: trigger-helm-deployment
           project-name: imageserver-helm
-          filters:
-            branches:
-              only: master
           context:
             - circle-ci
           requires:
             - build-multi-arch-manifest
-
+          filters:
+            *tagfilter
+  
   daily-dependency-check:
     triggers:
       - schedule:
