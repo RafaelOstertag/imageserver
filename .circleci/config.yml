@@ -6,11 +6,20 @@ version-tag-only: &version-tag-only
   branches:
     ignore: /.*/
 
+schedule-trigger: &schedule-trigger
+  equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+
+not-schedule-trigger: &not-schedule-trigger
+  not:
+    *schedule-trigger
+
 orbs:
   c: rafaelostertag/common-orb@1.19.0
 
 workflows:
   build-any-branch:
+    when:
+      *not-schedule-trigger
     jobs:
       - c/maven-build-and-test:
           name: build-and-test
@@ -20,6 +29,8 @@ workflows:
             - repository-read
 
   build-and-release:
+    when:
+      *not-schedule-trigger
     jobs:
       - c/maven-build-and-test:
           name: build-and-test
@@ -81,15 +92,8 @@ workflows:
             *version-tag-only
   
   daily-dependency-check:
-    triggers:
-      - schedule:
-          cron: "21 4 * * 4"
-          filters:
-            branches:
-              only:
-                - master
-                - develop
-
+    when:
+      *schedule-trigger
     jobs:
       - c/maven-dependency-check:
           context:
