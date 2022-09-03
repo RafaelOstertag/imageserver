@@ -6,7 +6,6 @@ version-tag-only: &version-tag-only
   branches:
     ignore: /.*/
 
-
 orbs:
   c: rafaelostertag/common-orb@1.19.0
 
