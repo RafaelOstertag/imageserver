@@ -27,7 +27,7 @@
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
         <quarkus.platform.version>2.12.0.Final</quarkus.platform.version>
         <assertk.version>0.25</assertk.version>
-        <wiremock-jre8.version>2.33.2</wiremock-jre8.version>
+        <wiremock-jre8.version>2.35.1</wiremock-jre8.version>
         <quarkus-junit5-mockk.version>1.1.1</quarkus-junit5-mockk.version>
 
         <!-- Sonar -->
